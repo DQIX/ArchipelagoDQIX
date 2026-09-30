@@ -7,6 +7,7 @@ from worlds.dqix.Constants import DQIXConstants
 from worlds.dqix.helper.BaseHelper import BaseHelper
 from worlds.dqix.helper.BestiaryHelper import BestiaryHelper
 from worlds.dqix.helper.InventoryHelper import InventoryHelper
+from .Rom import DQIXProcedurePatch
 
 if TYPE_CHECKING:
     from worlds._bizhawk.context import BizHawkClientContext
@@ -16,6 +17,8 @@ class DQIXClient(BizHawkClient):
     base_helper: Optional[BaseHelper]
     game = "Dragon Quest IX"
     system = "NDS"
+    patch_suffix = ".apdqix"
+
     next_expected_item_index = None
 
     def __init__(self):

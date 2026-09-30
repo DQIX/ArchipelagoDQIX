@@ -7,11 +7,11 @@ from BaseClasses import Tutorial, Region
 from Options import OptionError
 from rule_builder.rules import Has, HasAll, Rule, HasAny
 from worlds.AutoWorld import World, WebWorld
-from .Client import DQIXClient
 from .Items import DQIXItems, ItemType, DQIXItem, all_items, all_items_dict
 from .Locations import DQIXLocation, all_locations_dict, all_locations_by_region
 from .Options import EndBoss, DQIXOptions
 from .Rom import DQIXProcedurePatch, patch_rom
+from .Client import DQIXClient
 from .helper.BaseHelper import BaseHelper
 
 
