@@ -19,7 +19,7 @@ class DQIXSettings(settings.Group):
     class RomFile(settings.UserFilePath):
         description = "Dragon Quest IX - Sentinels of the Starry Skies (Europe) ROM file"
         copy_to = "Dragon Quest IX - Sentinels of the Starry Skies (Europe) (En,Fr,De,Es,It).nds"
-        md5s = [DQIXProcedurePatch.hash]
+        md5s = DQIXProcedurePatch.hash
 
     rom_file: RomFile = RomFile(RomFile.copy_to)
 
