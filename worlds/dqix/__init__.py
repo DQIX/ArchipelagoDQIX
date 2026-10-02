@@ -7,19 +7,18 @@ from BaseClasses import Tutorial, Region
 from Options import OptionError
 from rule_builder.rules import Has, HasAll, Rule, HasAny
 from worlds.AutoWorld import World, WebWorld
-from .Items import DQIXItems, ItemType, DQIXItem, all_items, all_items_dict
+from .Items import DQIXItems, DQIXItem, all_items, all_items_dict
 from .Locations import DQIXLocation, all_locations_dict, all_locations_by_region
 from .Options import EndBoss, DQIXOptions
-from .Rom import DQIXProcedurePatch, patch_rom
+from .Rom import DQIXPatch, patch_rom
 from .Client import DQIXClient
-from .helper.BaseHelper import BaseHelper
 
 
 class DQIXSettings(settings.Group):
     class RomFile(settings.UserFilePath):
         description = "Dragon Quest IX - Sentinels of the Starry Skies (Europe) ROM file"
         copy_to = "Dragon Quest IX - Sentinels of the Starry Skies (Europe) (En,Fr,De,Es,It).nds"
-        md5s = DQIXProcedurePatch.hash
+        md5s = [DQIXPatch.DQIX_HASH]
 
     rom_file: RomFile = RomFile(RomFile.copy_to)
 
@@ -268,7 +267,10 @@ class DragonQuestIX(World):
         return self.options.as_dict("end_boss")
 
     def generate_output(self, output_directory: str) -> None:
-        patch = DQIXProcedurePatch(player=self.player, player_name=self.player_name)
+        patch = DQIXPatch(path=os.path.join(
+            output_directory,
+            self.multiworld.get_out_file_name_base(self.player)
+            + DQIXPatch.patch_file_ending), player=self.player, player_name=self.player_name, world=self)
         patch_rom(self, patch)
         patch.write(os.path.join(output_directory, f"{self.multiworld.get_out_file_name_base(self.player)}{patch.patch_file_ending}"))
 

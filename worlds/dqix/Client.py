@@ -7,7 +7,7 @@ from worlds.dqix.Constants import DQIXConstants
 from worlds.dqix.helper.BaseHelper import BaseHelper
 from worlds.dqix.helper.BestiaryHelper import BestiaryHelper
 from worlds.dqix.helper.InventoryHelper import InventoryHelper
-from .Rom import DQIXProcedurePatch
+from .Rom import DQIXPatch
 
 if TYPE_CHECKING:
     from worlds._bizhawk.context import BizHawkClientContext
