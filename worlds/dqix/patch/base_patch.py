@@ -8,5 +8,8 @@ if TYPE_CHECKING:
 
 def patch(rom: Rom, world_package: str, patch_instance: "DQIXPatch", files_dump: dict[str, bytes | bytearray]) -> None:
     rom.to_bytes()
-    shop_file = rom.files["/data/bin/menu/shopdata1.bin"]
-    print(shop_file)
+    shop_data = bytearray(rom.files["/data/bin/menu/shopdata1.bin"])
+    # Chronocrystal replaced with Moonwort Bulb
+    shop_data[0xd84:0xd86] = b"\xF7\x55"
+    rom.files["/data/bin/menu/shopdata1.bin"] = bytes(shop_data)
+    print(shop_data)

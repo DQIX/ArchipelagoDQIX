@@ -2,7 +2,7 @@ import logging
 from typing import TYPE_CHECKING, Dict, Any, Callable
 from zipfile import ZipFile
 
-from Files import APAutoPatchInterface
+from worlds.Files import APAutoPatchInterface
 from settings import get_settings
 
 if TYPE_CHECKING:
