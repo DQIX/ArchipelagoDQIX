@@ -1,7 +1,9 @@
-from typing import TYPE_CHECKING, Optional, List
+from typing import TYPE_CHECKING, Optional, List, Dict
 
+# noinspection protected-member
 import worlds._bizhawk as bizhawk
 from NetUtils import NetworkItem, ClientStatus
+# noinspection protected-member
 from worlds._bizhawk.client import BizHawkClient
 from worlds.dqix.Constants import DQIXConstants
 from worlds.dqix.helper.BaseHelper import BaseHelper
@@ -9,11 +11,12 @@ from worlds.dqix.helper.BestiaryHelper import BestiaryHelper
 from worlds.dqix.helper.InventoryHelper import InventoryHelper
 
 if TYPE_CHECKING:
+    # noinspection protected-member
     from worlds._bizhawk.context import BizHawkClientContext
 
 
 class DQIXClient(BizHawkClient):
-    base_helper: Optional[BaseHelper]
+    base_helper: Optional[BaseHelper] = None
     game = "Dragon Quest IX"
     system = "NDS"
     next_expected_item_index = None
@@ -22,7 +25,6 @@ class DQIXClient(BizHawkClient):
         self.boss_list_updated = False
         self.forbidden_monsters = BestiaryHelper.STARTING_FORBIDDEN_MONSTERS
         self.syncing = False
-        self.base_helper: Optional[BaseHelper] = None
         self.current_money = None
         self.visited_locations = []
         self.printed_boss_stats = False
@@ -54,6 +56,7 @@ class DQIXClient(BizHawkClient):
         try:
             if self.base_helper is None:
                 self.base_helper = BaseHelper(ctx)
+                assert self.base_helper is not None
 
             if await self.is_ready_and_in_game():
                 await bizhawk.set_message_interval(ctx=ctx.bizhawk_ctx, value=5)
@@ -80,40 +83,44 @@ class DQIXClient(BizHawkClient):
                 await self.bestiary_check(ctx)
                 await self.received_items_check(ctx)
 
-                BaseHelper.debug("Completed one round of location, bestiary and received item checks")
+                # BaseHelper.debug("Completed one round of location, bestiary and received item checks")
 
         except bizhawk.RequestFailedError:
             # The connector didn't respond. Exit handler and return to main loop to reconnect
             pass
 
     async def is_ready_and_in_game(self) -> bool:
+        assert self.base_helper is not None
         is_in_game = await self.base_helper.read_int_from_ram(address=DQIXConstants.IN_GAME, size=1) == 0
         is_in_battle = await self.base_helper.read_int_from_ram(address=DQIXConstants.IN_BATTLE, size=1) == 0
         has_char_name = await self.base_helper.read_int_from_ram(address=DQIXConstants.HERO_NAME_START, size=1) != 0
 
         result = is_in_game and has_char_name and not is_in_battle
         if not result:
-            BaseHelper.debug("game is not ready yet. Current data as follows:")
-            BaseHelper.debug("-- is_in_game = " + str(is_in_game))
-            BaseHelper.debug("-- is_in_battle = " + str(is_in_battle))
-            BaseHelper.debug("-- has_char_name = " + str(has_char_name))
+            # BaseHelper.debug("game is not ready yet. Current data as follows:")
+            # BaseHelper.debug("-- is_in_game = " + str(is_in_game))
+            # BaseHelper.debug("-- is_in_battle = " + str(is_in_battle))
+            # BaseHelper.debug("-- has_char_name = " + str(has_char_name))
 
             if is_in_game and has_char_name and is_in_battle:
                 await self.punish_player()
         else:
-            BaseHelper.debug("Game is currently ready and runs")
+            return True
+            # BaseHelper.debug("Game is currently ready and runs")
 
         return result
 
     async def location_check(self, ctx: "BizHawkClientContext"):
-        BaseHelper.debug("Begin: Checking Locations")
+        assert self.base_helper is not None
+        # BaseHelper.debug("Begin: Checking Locations")
         current_location = await self.base_helper.read_int_from_ram(address=DQIXConstants.CURRENT_MAP, size=2)
         if current_location not in self.visited_locations:
             await ctx.check_locations([current_location])
-        BaseHelper.debug("End: Checking Locations")
+        # BaseHelper.debug("End: Checking Locations")
 
     async def received_items_check(self, ctx: "BizHawkClientContext"):
-        BaseHelper.debug("Begin: Checking Received Items")
+        assert self.base_helper is not None
+        # BaseHelper.debug("Begin: Checking Received Items")
         network_item: NetworkItem
         inventory_helper = InventoryHelper(ctx=ctx, dqix_client=self)
         for index, network_item in enumerate(ctx.items_received):
@@ -130,14 +137,14 @@ class DQIXClient(BizHawkClient):
                 await self.base_helper.write_int_to_ram(DQIXConstants.NEXT_EXPECTED_INDEX, 4, self.next_expected_item_index)
             elif index > self.next_expected_item_index:
                 self.syncing = True
-        BaseHelper.debug("End: Checking Received Items")
+        # BaseHelper.debug("End: Checking Received Items")
         if not self.boss_list_updated:
             self.update_boss_list(ctx.items_received)
             self.boss_list_updated = True
 
     @staticmethod
     async def bestiary_check(ctx: "BizHawkClientContext"):
-        BaseHelper.debug("Begin: Checking Bestiary")
+        # BaseHelper.debug("Begin: Checking Bestiary")
         bestiary_helper = BestiaryHelper(ctx=ctx)
 
         target_boss_option = ctx.slot_data["end_boss"]
@@ -153,9 +160,10 @@ class DQIXClient(BizHawkClient):
         if not ctx.finished_game and final_boss_data is not None and final_boss_data.has_defeated_monster():
             await ctx.send_msgs([{"cmd": "StatusUpdate", "status": ClientStatus.CLIENT_GOAL}])
             ctx.finished_game = True
-        BaseHelper.debug("End: Checking Bestiary")
+        # BaseHelper.debug("End: Checking Bestiary")
 
     async def punish_player(self):
+        assert self.base_helper is not None
         current_monster = await self.base_helper.read_int_from_ram(DQIXConstants.CURRENT_MONSTER, 2)
 
         if current_monster in self.forbidden_monsters:
@@ -163,14 +171,16 @@ class DQIXClient(BizHawkClient):
             for char_hp_address in [DQIXConstants.CHAR_1_BATTLE_HP, DQIXConstants.CHAR_2_BATTLE_HP, DQIXConstants.CHAR_3_BATTLE_HP, DQIXConstants.CHAR_4_BATTLE_HP]:
                 char_hp = await self.base_helper.read_int_from_ram(char_hp_address, 2)
                 if char_hp > 1:
-                    await self.base_helper.write_int_to_ram(char_hp_address, 2, 1)
-                    await self.base_helper.write_int_to_ram(char_hp_address + 2, 2, 1)
+                    # Set current HP to 1
+                    if await self.base_helper.guarded_write_int_to_ram(char_hp_address, 2, 1, char_hp) is None:
+                        BaseHelper.debug("Could not update HP at address {} - HP changed while updating from original: {}".format(char_hp_address, char_hp))
 
             for char_mp_address in [DQIXConstants.CHAR_1_BATTLE_MP, DQIXConstants.CHAR_2_BATTLE_MP, DQIXConstants.CHAR_3_BATTLE_MP, DQIXConstants.CHAR_4_BATTLE_MP]:
                 char_mp = await self.base_helper.read_int_from_ram(char_mp_address, 2)
                 if char_mp > 0:
-                    await self.base_helper.write_int_to_ram(char_mp_address, 2, 0)
-                    await self.base_helper.write_int_to_ram(char_mp_address + 2, 2, 0)
+                    # Set current MP to 0
+                    if await self.base_helper.guarded_write_int_to_ram(char_mp_address, 2, 0, char_mp) is None:
+                        BaseHelper.debug("Could not update MP at address {} - MP changed while updating from original: {}".format(char_mp_address, char_mp))
 
             for char_status_address in [DQIXConstants.CHAR_1_BATTLE_STATUS, DQIXConstants.CHAR_2_BATTLE_STATUS, DQIXConstants.CHAR_3_BATTLE_STATUS, DQIXConstants.CHAR_4_BATTLE_STATUS]:
                 char_status = await self.base_helper.read_int_from_ram(char_status_address, 1)
@@ -178,12 +188,13 @@ class DQIXClient(BizHawkClient):
                 # If not already dead
                 if status_as_bit_list[7] != "1":
                     status_as_bit_list[4] = "1"
-                    await self.base_helper.write_int_to_ram(char_status_address, 1, int("".join(status_as_bit_list), 2))
+                    if await self.base_helper.guarded_write_int_to_ram(char_status_address, 1, int("".join(status_as_bit_list), 2), char_status) is None:
+                        BaseHelper.debug("Could not update Character Status at address {} - Status changed while updating from original: {}".format(char_mp_address, char_status))
 
     def update_boss_list(self, items_received: List[NetworkItem]):
         for _, network_item in enumerate(items_received):
             if 50000 <= network_item.item <= 50022:
                 monster_id = BestiaryHelper.BOSS_KEYS_TO_MONSTER_ID[network_item.item]
-                self.base_helper.debug("Removing Boss with monster ID: " + str(monster_id))
+                BaseHelper.debug("Removing Boss with monster ID: " + str(monster_id))
                 if monster_id in self.forbidden_monsters:
                     self.forbidden_monsters.remove(monster_id)
