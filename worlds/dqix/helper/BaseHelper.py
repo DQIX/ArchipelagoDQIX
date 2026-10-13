@@ -24,6 +24,10 @@ class BaseHelper:
         address = int(address, 16) if isinstance(address, str) else address
         await bizhawk.write(ctx=self.ctx.bizhawk_ctx, write_list=[(address, int.to_bytes(value, size, "little"), "Main RAM")])
 
+    async def guarded_write_int_to_ram(self, address: int | str, size: int, value: int, current_value: int):
+        address = int(address, 16) if isinstance(address, str) else address
+        await bizhawk.guarded_write(ctx=self.ctx.bizhawk_ctx, write_list=[(address, int.to_bytes(value, size, "little"), "Main RAM")], guard_list=[(address, int.to_bytes(current_value, size, "little"), "Main RAM")])
+
     async def read_segments_as_ints_from_ram(self, address: int | str, segment_count: int, segment_size: int = 1):
         address = int(address, 16) if isinstance(address, str) else address
         read_bytes = (await bizhawk.read(ctx=self.ctx.bizhawk_ctx, read_list=[(address, segment_size * segment_count, "Main RAM")]))[0]

@@ -47,7 +47,6 @@ all_locations_by_region: Dict[str, Dict[str, int]] = {
         "Stornway Castle - L3": 120,
         "Stornway Castle - Treasury": 121,
         "Stornway Castle - well": 123,
-        "Stornway Castle - cellar": 124,
         "Stornway Castle - outside": 198,
         "Quester's Rest - Lobby 1": 50101,
         "Quester's Rest - Lounge 1": 50102
