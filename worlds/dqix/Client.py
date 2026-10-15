@@ -37,7 +37,7 @@ class DQIXClient(BizHawkClient):
         try:
             # Check ROM name/patch version
             rom_name = ((await bizhawk.read(ctx.bizhawk_ctx, [(0x0, 12, "ROM")]))[0]).decode("ascii")
-            if rom_name != "DRAGONQUEST9":
+            if not rom_name.startswith("APDQIX"):
                 return False
         except bizhawk.RequestFailedError:
             return False  # Not able to get a response, say no for now

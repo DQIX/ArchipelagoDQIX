@@ -10,7 +10,7 @@ from worlds.AutoWorld import World, WebWorld
 from .Items import DQIXItems, DQIXItem, all_items, all_items_dict
 from .Locations import DQIXLocation, all_locations_dict, all_locations_by_region
 from .Options import EndBoss, DQIXOptions
-from .Rom import DQIXPatch, patch_rom
+from .Rom import DQIXPatch
 from .Client import DQIXClient
 
 
@@ -271,7 +271,6 @@ class DragonQuestIX(World):
             output_directory,
             self.multiworld.get_out_file_name_base(self.player)
             + DQIXPatch.patch_file_ending), player=self.player, player_name=self.player_name, world=self)
-        patch_rom(self, patch)
         patch.write(os.path.join(output_directory, f"{self.multiworld.get_out_file_name_base(self.player)}{patch.patch_file_ending}"))
 
     def get_completion_condition(self) -> Rule:

@@ -2,6 +2,8 @@ import logging
 from typing import TYPE_CHECKING, Dict, Any, Callable
 from zipfile import ZipFile
 
+from Utils import Version
+from .patch import shop_patch
 from worlds.Files import APAutoPatchInterface
 from settings import get_settings
 
@@ -9,12 +11,12 @@ if TYPE_CHECKING:
     from worlds.dqix import DragonQuestIX
 
 
-
 class DQIXPatch(APAutoPatchInterface):
     game = "Dragon Quest IX"
     patch_file_ending = ".apdqix"
     result_file_ending = ".nds"
     DQIX_HASH: str = "3a63438fff7db282fa3133e8fd020e85"
+    PATCH_VERSION = Version(1, 0, 0)
 
     def __init__(self, path: str, player=None, player_name="", world=None):
         self.world: "DragonQuestIX" = world
@@ -43,7 +45,7 @@ class DQIXPatch(APAutoPatchInterface):
 class PatchMethods:
     @staticmethod
     def write_contents(patch: DQIXPatch, opened_zipfile: ZipFile) -> None:
-        procedures: list[str] = ["base_patch"]
+        procedures: list[str] = ["base_patch", "shop_patch"]
 
         opened_zipfile.writestr("procedures.txt", "\n".join(procedures))
 
@@ -73,7 +75,8 @@ class PatchMethods:
                 None,
             ],
         ] = {
-            "base_patch": base_patch.patch
+            "base_patch": base_patch.patch,
+            "shop_patch": shop_patch.patch
         }
 
         files_dump: dict[str, bytes | bytearray] = {}
@@ -108,9 +111,3 @@ def get_base_rom_bytes() -> bytes:
         base_rom_bytes = bytes(infile.read())
 
     return base_rom_bytes
-
-
-def patch_rom(world: "DragonQuestIX", patch: DQIXPatch) -> None:
-    # patch.write_token(APTokenTypes.WRITE, 0x0FFFFFF0, b"APDQIX")
-    # patch.write_file("token_data.bin", patch.get_token_binary())
-    pass
