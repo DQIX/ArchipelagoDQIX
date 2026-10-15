@@ -1,21 +1,17 @@
+from typing import List
+
 from ..game.Shop import Shop
 
 
 class ShopContainer:
     def __init__(self):
-        self.shops = []
+        self.shops: List[Shop] = []
         self.start_bytes: bytes
         self.end_bytes: bytes
-        self.divider_bytes = bytes.fromhex('670016555555555505FFFFFF')
+        self.divider_bytes = bytes.fromhex('67001655 55555555 05FFFFFF')
 
     @staticmethod
     def create_from_bytes(data: bytearray):
-        # 1x 4 bytes Shop identifier, 0 to 37 (almost)
-        # 1x 4 bytes of unknown purpose, ranging from 1 to 5
-        # 18x 4 bytes per item sold
-        # 1x 4 bytes: Price multiplier in percent, normally 100
-        # 1x 4 bytes: Shop Type, eg 3 for a "general" shop
-
         container = ShopContainer()
         container.start_bytes = data[0x0:0x34]
         container.end_bytes = data[0xE9C:]
