@@ -134,7 +134,7 @@ class DragonQuestIX(World):
         regions.append(region_alltrades_abbey)
         regions.append(region_tower_of_trades)
 
-        if self.options.end_boss in [EndBoss.option_greygnarl, EndBoss.option_corvus]:
+        if self.options.end_boss.value  in [EndBoss.option_greygnarl, EndBoss.option_corvus]:
             region_porth_llaffan = self.create_region_with_locations(region_name="Porth Llaffan")
             self.create_entrance(region_observatory, region_porth_llaffan)
             self.create_entrance(region_alltrades_abbey, region_porth_llaffan)
@@ -187,9 +187,7 @@ class DragonQuestIX(World):
             self.create_entrance(region_ocean, region_wormwood_creek)
             region_bowhole = self.create_region_with_locations(region_name="Bowhole")
             region_bowhole.add_event(location_name="Boss: Gadrongo", item_name="Defeated Gadrongo", rule=Has("Boss Key: Gadrongo"))
-            self.create_entrance(region_wormwood_creek, region_bowhole,
-                                 HasAll("Defeated Master of Nu'un", "Defeated Lleviathan", "Defeated Garth Goyle", "Defeated Tyrantula", "Defeated Grand Lizzier", "Defeated Larstastnaras",
-                                        "Defeated Dreadmaster"))
+            self.create_entrance(region_wormwood_creek, region_bowhole, HasAll("Defeated Master of Nu'un", "Defeated Lleviathan", "Defeated Garth Goyle", "Defeated Tyrantula", "Defeated Grand Lizzier", "Defeated Larstastnaras", "Defeated Dreadmaster"))
 
             region_upover = self.create_region_with_locations(region_name="Upover")
             self.create_entrance(region_wormwood_creek, region_upover, Has("Defeated Gadrongo"))
@@ -218,7 +216,7 @@ class DragonQuestIX(World):
             regions.append(region_upover)
             regions.append(region_magmaroo)
 
-            if self.options.end_boss == EndBoss.option_corvus:
+            if self.options.end_boss.value  == EndBoss.option_corvus:
                 region_goretress = self.create_region_with_locations(region_name="Goretress")
                 region_goretress.add_event(location_name="Boss: Goreham-Hogg (I)", item_name="Defeated Goreham-Hogg (I)", rule=Has("Boss Key: Goreham-Hogg (I)"))
                 self.create_entrance(region_upover, region_goretress, Has("Defeated Greygnarl"))
@@ -287,9 +285,9 @@ class DragonQuestIX(World):
     def apply_special_rules(self) -> None:
         self.set_rule(spot=self.get_location("Stornway Castle - Treasury"), rule=Has("Defeated Morag"))
 
-        if self.options.end_boss in [EndBoss.option_greygnarl, EndBoss.option_corvus]:
+        if self.options.end_boss.value  in [EndBoss.option_greygnarl, EndBoss.option_corvus]:
             self.set_rule(spot=self.get_location("Dourbridge - secret shop"), rule=Has("Ultimate Key"))
             self.set_rule(spot=self.get_location("The Plumbed Depths - B1 (dungeon)"), rule=HasAny("Ultimate Key", "Magic Key"))
             self.set_rule(spot=self.get_location("The Plumbed Depths - B2 (graves)"), rule=HasAny("Ultimate Key", "Magic Key"))
-            if self.options.end_boss == EndBoss.option_corvus:
+            if self.options.end_boss.value  == EndBoss.option_corvus:
                 self.set_rule(spot=self.get_location("The Magmaroo - Greygnarl's Lair"), rule=Has("Defeated Goreham-Hogg (I)"))
