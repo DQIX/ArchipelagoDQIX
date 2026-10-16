@@ -16,8 +16,6 @@ class Shop:
         self.price_multiplier = int.from_bytes(byte_data[0x50: 0x54], "little")
         self.shop_type = int.from_bytes(byte_data[0x54:0x58], "little")
 
-        self.price_multiplier = self.price_multiplier * 5
-
     def to_bytes(self):
         """
         Transforms the shop back into it's corresponding bytes

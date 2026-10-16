@@ -37,9 +37,7 @@ class ShopContainer:
         new_shop_data = json.loads(data)
 
         for index, shop in enumerate(self.shops):
-            relevant_data = new_shop_data[shop.identifier]
+            relevant_data = new_shop_data[str(shop.identifier)]
             shop.items = relevant_data["items"]
             shop.shop_type = relevant_data["shop_type"]
             self.shops[index] = shop
-
-        # TODO Fix me :D

@@ -33,6 +33,6 @@ def randomize_shops(patch_instance: "DQIXPatch") -> Dict[int, Dict]:
     for shop_id, shop in ShopData.SHOPS_WITH_DATA.items():
         items = items_by_shop_type[shop.shop_type][:shop.item_count]
         del items_by_shop_type[shop.shop_type][:shop.item_count]
-        shops[shop_id] = ShopConfig(items, shop.shop_type, shop.item_count)._asdict()
+        shops[shop_id] = {"items": items, "shop_type": shop.shop_type}
 
     return shops
