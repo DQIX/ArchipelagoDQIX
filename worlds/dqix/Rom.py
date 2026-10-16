@@ -2,6 +2,7 @@ import logging
 from typing import TYPE_CHECKING, Dict, Any, Callable
 from zipfile import ZipFile
 
+from .Options import RandomizeShops
 from Utils import Version
 from .patch import shop_patch
 from worlds.Files import APAutoPatchInterface
@@ -45,7 +46,11 @@ class DQIXPatch(APAutoPatchInterface):
 class PatchMethods:
     @staticmethod
     def write_contents(patch: DQIXPatch, opened_zipfile: ZipFile) -> None:
-        procedures: list[str] = ["base_patch", "shop_patch"]
+        procedures: list[str] = ["base_patch"]
+
+        if patch.world.options.randomize_shops.value != RandomizeShops.option_none:
+            procedures.append("shop_patch")
+            shop_patch.write_patch(patch, opened_zipfile)
 
         opened_zipfile.writestr("procedures.txt", "\n".join(procedures))
 

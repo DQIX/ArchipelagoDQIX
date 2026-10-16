@@ -24,7 +24,21 @@ class FillerAmount(Range):
     default = 10
 
 
+class RandomizeShops(Choice):
+    """Choose if and how the shops should be randomized.
+    - "None" => Do not randomize shops in any way
+    - "Keep Shop Types" => Shops that sell e.g. Weapons keep selling only weapons, and the same amount"""
+    display_name = "Randomize Shops"
+    auto_display_name = True
+
+    option_none = 0
+    option_same_category = 1
+
+    default = option_none
+
+
 @dataclass
 class DQIXOptions(PerGameCommonOptions):
     end_boss: EndBoss
     filler_amount: FillerAmount
+    randomize_shops: RandomizeShops

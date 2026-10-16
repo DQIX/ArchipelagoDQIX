@@ -134,7 +134,7 @@ class DragonQuestIX(World):
         regions.append(region_alltrades_abbey)
         regions.append(region_tower_of_trades)
 
-        if self.options.end_boss.value  in [EndBoss.option_greygnarl, EndBoss.option_corvus]:
+        if self.options.end_boss.value in [EndBoss.option_greygnarl, EndBoss.option_corvus]:
             region_porth_llaffan = self.create_region_with_locations(region_name="Porth Llaffan")
             self.create_entrance(region_observatory, region_porth_llaffan)
             self.create_entrance(region_alltrades_abbey, region_porth_llaffan)
@@ -216,7 +216,7 @@ class DragonQuestIX(World):
             regions.append(region_upover)
             regions.append(region_magmaroo)
 
-            if self.options.end_boss.value  == EndBoss.option_corvus:
+            if self.options.end_boss.value == EndBoss.option_corvus:
                 region_goretress = self.create_region_with_locations(region_name="Goretress")
                 region_goretress.add_event(location_name="Boss: Goreham-Hogg (I)", item_name="Defeated Goreham-Hogg (I)", rule=Has("Boss Key: Goreham-Hogg (I)"))
                 self.create_entrance(region_upover, region_goretress, Has("Defeated Greygnarl"))
@@ -265,10 +265,7 @@ class DragonQuestIX(World):
         return self.options.as_dict("end_boss")
 
     def generate_output(self, output_directory: str) -> None:
-        patch = DQIXPatch(path=os.path.join(
-            output_directory,
-            self.multiworld.get_out_file_name_base(self.player)
-            + DQIXPatch.patch_file_ending), player=self.player, player_name=self.player_name, world=self)
+        patch = DQIXPatch(path=os.path.join(output_directory, self.multiworld.get_out_file_name_base(self.player) + DQIXPatch.patch_file_ending), player=self.player, player_name=self.player_name, world=self)
         patch.write(os.path.join(output_directory, f"{self.multiworld.get_out_file_name_base(self.player)}{patch.patch_file_ending}"))
 
     def get_completion_condition(self) -> Rule:
@@ -285,9 +282,9 @@ class DragonQuestIX(World):
     def apply_special_rules(self) -> None:
         self.set_rule(spot=self.get_location("Stornway Castle - Treasury"), rule=Has("Defeated Morag"))
 
-        if self.options.end_boss.value  in [EndBoss.option_greygnarl, EndBoss.option_corvus]:
+        if self.options.end_boss.value in [EndBoss.option_greygnarl, EndBoss.option_corvus]:
             self.set_rule(spot=self.get_location("Dourbridge - secret shop"), rule=Has("Ultimate Key"))
             self.set_rule(spot=self.get_location("The Plumbed Depths - B1 (dungeon)"), rule=HasAny("Ultimate Key", "Magic Key"))
             self.set_rule(spot=self.get_location("The Plumbed Depths - B2 (graves)"), rule=HasAny("Ultimate Key", "Magic Key"))
-            if self.options.end_boss.value  == EndBoss.option_corvus:
+            if self.options.end_boss.value == EndBoss.option_corvus:
                 self.set_rule(spot=self.get_location("The Magmaroo - Greygnarl's Lair"), rule=Has("Defeated Goreham-Hogg (I)"))

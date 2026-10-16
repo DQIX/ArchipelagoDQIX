@@ -1,7 +1,8 @@
-from random import shuffle
-from typing import TYPE_CHECKING, List, Dict
+import json
+import zipfile
+from typing import TYPE_CHECKING, Dict
 
-from ..game.ShopData import ShopData
+from ..game.ShopData import ShopData, ShopConfig
 from ..game.ShopContainer import ShopContainer
 from ..apnds.rom import Rom
 
@@ -9,40 +10,29 @@ if TYPE_CHECKING:
     from .. import DQIXPatch
 
 
+def write_patch(patch_instance: "DQIXPatch", opened_zipfile: zipfile.ZipFile) -> None:
+    opened_zipfile.writestr("shop_data.json", json.dumps(randomize_shops(patch_instance)))
+
+
 def patch(rom: Rom, world_package: str, patch_instance: "DQIXPatch", files_dump: dict[str, bytes | bytearray]) -> None:
     shop_data = bytearray(rom.files["/data/bin/menu/shopdata1.bin"])
 
     shop_container = ShopContainer.create_from_bytes(shop_data)
 
-    shop_container = randomize_shops(shop_container)
+    shop_container.apply_new_shop_data(patch_instance.get_file("shop_data.json"))
 
     rom.files["/data/bin/menu/shopdata1.bin"] = shop_container.to_bytes()
 
 
-def randomize_shops(container: ShopContainer) -> ShopContainer:
-    modified_container = ShopContainer()
-    modified_container.start_bytes = container.start_bytes
-    modified_container.end_bytes = container.end_bytes
+def randomize_shops(patch_instance: "DQIXPatch") -> Dict[int, Dict]:
+    shops = {}
+    items_by_shop_type = ShopData.get_items_by_shop_type()
+    for shop_type in items_by_shop_type.keys():
+        patch_instance.world.random.shuffle(items_by_shop_type[shop_type])
 
-    items_by_shop_type: Dict[int, List[int]] = {
-        ShopData.TYPE_WEAPONS: [],
-        ShopData.TYPE_ARMOR: [],
-        ShopData.TYPE_COMMON_ITEMS: [],
-        ShopData.TYPE_ITEMS_AND_EQUIPMENT: [],
-        ShopData.TYPE_ALL_EQUIPMENT: [],
-        ShopData.TYPE_MIXED: []
-    }
-    for shop in container.shops:
-        for item in shop.items:
-            if item > 0:
-                items_by_shop_type[shop.shop_type].append(item)
+    for shop_id, shop in ShopData.SHOPS_WITH_DATA.items():
+        items = items_by_shop_type[shop.shop_type][:shop.item_count]
+        del items_by_shop_type[shop.shop_type][:shop.item_count]
+        shops[shop_id] = ShopConfig(items, shop.shop_type, shop.item_count)._asdict()
 
-    for i in range(len(items_by_shop_type)):
-        shuffle(items_by_shop_type[i])
-
-    for shop in container.shops:
-        shop.items = items_by_shop_type[shop.shop_type][:ShopData.ITEM_COUNT_BY_SHOP[shop.identifier]]
-        del items_by_shop_type[shop.shop_type][:ShopData.ITEM_COUNT_BY_SHOP[shop.identifier]]
-        modified_container.shops.append(shop)
-
-    return modified_container
+    return shops

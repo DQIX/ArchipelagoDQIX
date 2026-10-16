@@ -1,3 +1,4 @@
+import json
 from typing import List
 
 from ..game.Shop import Shop
@@ -31,3 +32,14 @@ class ShopContainer:
         out += self.end_bytes
 
         return bytes(out)
+
+    def apply_new_shop_data(self, data: str):
+        new_shop_data = json.loads(data)
+
+        for index, shop in enumerate(self.shops):
+            relevant_data = new_shop_data[shop.identifier]
+            shop.items = relevant_data["items"]
+            shop.shop_type = relevant_data["shop_type"]
+            self.shops[index] = shop
+
+        # TODO Fix me :D
