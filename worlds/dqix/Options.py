@@ -33,6 +33,9 @@ class RandomizeShops(Choice):
 
     option_none = 0
     option_same_category = 1
+    option_same_region = 2
+    option_same_category_and_region = 3
+    option_true_random = 4
 
     default = option_none
 

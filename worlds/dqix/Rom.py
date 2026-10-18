@@ -73,9 +73,7 @@ class PatchMethods:
             Callable[
                 [
                     apnds_rom.Rom,
-                    str,
                     DQIXPatch,
-                    dict[str, bytes | bytearray],
                 ],
                 None,
             ],
@@ -84,14 +82,13 @@ class PatchMethods:
             "shop_patch": shop_patch.patch
         }
 
-        files_dump: dict[str, bytes | bytearray] = {}
         base_data = get_base_rom_bytes()
         rom = apnds_rom.Rom.from_bytes(base_data)
         procedures: list[str] = str(
             patch.get_file("procedures.txt"), "utf-8"
         ).splitlines()
         for prod in procedures:
-            patch_procedures[prod](rom, __name__, patch, files_dump)
+            patch_procedures[prod](rom, patch)
 
         with open(target, "wb") as f:
             f.write(rom.to_bytes())
