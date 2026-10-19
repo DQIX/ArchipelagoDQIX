@@ -11,6 +11,7 @@ from .Items import DQIXItems, DQIXItem, all_items, all_items_dict
 from .Locations import DQIXLocation, all_locations_dict, all_locations_by_region
 from .Options import EndBoss, DQIXOptions
 from .Rom import DQIXPatch
+# noinspection unused-imports
 from .Client import DQIXClient
 
 
