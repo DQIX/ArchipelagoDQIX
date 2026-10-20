@@ -1,15 +1,14 @@
 import json
 import logging
 import zipfile
-from collections import Counter
 from random import Random
 from typing import TYPE_CHECKING, Dict, List
 
 from Options import OptionError
 from ..Options import RandomizeShops
-from ..game.ShopData import ShopData, ShopConfig
-from ..game.ShopContainer import ShopContainer
 from ..apnds.rom import Rom
+from ..game.ShopContainer import ShopContainer
+from ..game.ShopData import ShopData, ShopConfig
 
 if TYPE_CHECKING:
     from .. import DQIXPatch
@@ -29,43 +28,29 @@ def patch(rom: Rom, patch_instance: "DQIXPatch") -> None:
     rom.files["/data/bin/menu/shopdata1.bin"] = shop_container.to_bytes()
 
 
-def get_required_items_for_count(remaining_items: list[int], cnt: int) -> List[int]:
-    required_items = []
-    counter = Counter(remaining_items)
-
-    for item, amount in counter.items():
-        # If as many of one item remain as there are shops, one has to be added to the current shop
-        if amount == cnt:
-            required_items.append(item)
-            logging.warning("Found required item needed to satisfy the generator: {} of item {} present, {} shops remaining".format(amount, item, cnt))
-        elif amount > cnt:
-            logging.error("Something went really wrong, we have {} items to be placed with {} shops remaining".format(amount, cnt))
-    return required_items
-
-
 def get_backup_item(shop_type: int, current_items: List[int], world_random: Random) -> int:
     replacements = []
 
     # Weapons
     if shop_type in [ShopData.SHOP_TYPE_WEAPONS, ShopData.SHOP_TYPE_ALL, ShopData.SHOP_TYPE_ALL_EQUIPMENT, ShopData.SHOP_TYPE_MIXED]:
-        replacements.extend([20015, 20515, 19065, 20400, 20311, 20613, 20812, 20115, 20209, 19162, 20712, 20912])
+        replacements.extend([20015, 20023, 20003, 20515, 20513, 19065, 19064, 19052, 20400, 20496, 20495, 20311, 20301, 20308, 20613, 20812, 20804, 20806, 20115, 20114, 20104, 20209, 19162, 20712, 20912])
 
     # Armor
     if shop_type in [ShopData.SHOP_TYPE_ARMOR, ShopData.SHOP_TYPE_ALL, ShopData.SHOP_TYPE_ALL_EQUIPMENT]:
-        replacements.extend([21294, 12805, 12418, 13606, 13305, 15045, 16263, 17103, 17405])
+        replacements.extend([21294, 21280, 21299, 12805, 12795, 12801, 12418, 13606, 13305, 13521, 13003, 15045, 16263, 17103, 17405])
 
     # Accessories
     if shop_type in [ShopData.SHOP_TYPE_COMMON_ITEMS, ShopData.SHOP_TYPE_ALL, ShopData.SHOP_TYPE_MIXED]:
-        replacements.extend([18014, 18020, 18034, 18011])
+        replacements.extend([18014, 18020, 18034, 18011, 18008, 18001, 18004])
 
     # Normal Items
     if shop_type in [ShopData.SHOP_TYPE_COMMON_ITEMS, ShopData.SHOP_TYPE_ALL, ShopData.SHOP_TYPE_MIXED]:
-        replacements.extend([22258, 22082, 22073, 22020, 22018, 22012, 22002])
+        replacements.extend([22258, 22082, 22073, 22020, 22018, 22012, 22002, 22072, 22103])
 
     replacements = [item for item in replacements if item not in current_items]
 
     if len(replacements) == 0:
-        raise Exception("Could not fill shop with replacements - this should not usually happen.")
+        raise Exception("Could not fill shop with replacements - this should not usually happen.", shop_type, current_items)
 
     return world_random.choice(replacements)
 
@@ -159,8 +144,9 @@ def randomize_shops(patch_instance: "DQIXPatch", randomization_type: int) -> Dic
                 logging.warning("Still items left after filled all shops - something went wrong!")
                 logging.warning("Remaining items in pool: " + str(all_items))
             for shop_id, shop in shuffled_shops.items():
-                if len(shop.items) < shop.item_count:
-                    for _ in range(shop.item_count - len(shop.items)):
+                missing_item_count = shop.item_count - len(shop.items)
+                if missing_item_count > 0:
+                    for _ in range(missing_item_count):
                         backup_item = get_backup_item(shop.shop_type, shop.items, world_random)
                         shop.items.append(backup_item)
                         logging.warning("Filling shop {} that is missing slots with {}".format(shop_id, backup_item))
