@@ -25,16 +25,21 @@ class FillerAmount(Range):
 
 
 class RandomizeShops(Choice):
-    """Choose if and how the shops should be randomized.
-    - "None" => Do not randomize shops in any way
-    - "Keep Shop Types" => Shops that sell e.g. Weapons keep selling only weapons, and the same amount"""
+    """
+    Choose if and how the shops should be randomized.
+    - "None" => Do not randomize Shops
+    - "Same Shop Type" => Shops of the same type are randomized
+    - "Same Region" => Shops in the same region are randomized
+    - "Same Shop Type And Region" => Shops of the same type and in the same region are randomized
+    - "True Random" => All Shops get randomized together
+    """
     display_name = "Randomize Shops"
     auto_display_name = True
 
     option_none = 0
-    option_same_category = 1
+    option_same_shop_type = 1
     option_same_region = 2
-    option_same_category_and_region = 3
+    option_same_shop_type_and_region = 3
     option_true_random = 4
 
     default = option_none
