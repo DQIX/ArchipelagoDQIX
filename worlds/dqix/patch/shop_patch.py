@@ -64,23 +64,6 @@ def get_random_valid_item(item_pool: Dict[int, int], existing_items: List[int], 
 
 
 def randomize_shops(patch_instance: "DQIXPatch", randomization_type: int) -> Dict[int, Dict]:
-    # logging.warning("ITEMS_BY_SHOP_TYPE")
-    # for shop_type, items in ShopData.ITEMS_BY_SHOP_TYPE.items():
-    # logging.warning(str(shop_type) + ": {" + ", ".join(["{}: {}".format(a, b) for a, b in {k: v for k, v in sorted(ShopData.ITEMS_BY_SHOP_TYPE[shop_type].items(), key=lambda item: item[1], reverse=True)}.items()]) + "}")
-
-    # logging.warning("ITEMS_BY_REGION")
-    # for region, items in ShopData.ITEMS_BY_REGION.items():
-    # logging.warning(str(region) + ": {" + ", ".join(["{}: {}".format(a, b) for a, b in {k: v for k, v in sorted(ShopData.ITEMS_BY_REGION[region].items(), key=lambda item: item[1], reverse=True)}.items()]) + "}")
-
-    # logging.warning("ITEMS_BY_REGION_AND_SHOP_TYPE")
-    # for region, data in ShopData.ITEMS_BY_REGION_AND_SHOP_TYPE.items():
-    #     logging.warning("REGION: "+ str(region))
-    #     for shop_type, items in data.items():
-    #         logging.warning(str(shop_type) + ": {" + ", ".join(["{}: {}".format(a, b) for a, b in {k: v for k, v in sorted(ShopData.ITEMS_BY_REGION_AND_SHOP_TYPE[region][shop_type].items(), key=lambda item: item[1], reverse=True)}.items()]) + "}")
-
-    # logging.warning("ALL_ITEMS")
-    # logging.warning([a for a in {k: v for k, v in sorted(ShopData.ALL_ITEMS.items(), key=lambda item: item[1], reverse=True)}.items()])
-
     if randomization_type == RandomizeShops.option_none:
         raise OptionError("This should not be possible - Trying to randomize shops when randomization_type is \"None\"")
     shops: Dict[int, Dict[str, List[int] | int]] = {}
