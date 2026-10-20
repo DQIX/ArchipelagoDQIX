@@ -43,21 +43,49 @@ def get_required_items_for_count(remaining_items: list[int], cnt: int) -> List[i
     return required_items
 
 
-def get_random_valid_item(item_pool: Dict[int, int], existing_items: List[int], world_random: Random) -> int:
+def get_backup_item(shop_type: int, current_items: List[int], world_random: Random) -> int:
+    replacements = []
+
+    # Weapons
+    if shop_type in [ShopData.SHOP_TYPE_WEAPONS, ShopData.SHOP_TYPE_ALL, ShopData.SHOP_TYPE_ALL_EQUIPMENT, ShopData.SHOP_TYPE_MIXED]:
+        replacements.extend([20015, 20515, 19065, 20400, 20311, 20613, 20812, 20115, 20209, 19162, 20712, 20912])
+
+    # Armor
+    if shop_type in [ShopData.SHOP_TYPE_ARMOR, ShopData.SHOP_TYPE_ALL, ShopData.SHOP_TYPE_ALL_EQUIPMENT]:
+        replacements.extend([21294, 12805, 12418, 13606, 13305, 15045, 16263, 17103, 17405])
+
+    # Accessories
+    if shop_type in [ShopData.SHOP_TYPE_COMMON_ITEMS, ShopData.SHOP_TYPE_ALL, ShopData.SHOP_TYPE_MIXED]:
+        replacements.extend([18014, 18020, 18034, 18011])
+
+    # Normal Items
+    if shop_type in [ShopData.SHOP_TYPE_COMMON_ITEMS, ShopData.SHOP_TYPE_ALL, ShopData.SHOP_TYPE_MIXED]:
+        replacements.extend([22258, 22082, 22073, 22020, 22018, 22012, 22002])
+
+    replacements = [item for item in replacements if item not in current_items]
+
+    if len(replacements) == 0:
+        raise Exception("Could not fill shop with replacements - this should not usually happen.")
+
+    return world_random.choice(replacements)
+
+
+def get_random_valid_item(item_pool: Dict[int, int], existing_items: List[int], world_random: Random, shop_type: int) -> int:
     allowed_items = {k: v for k, v in item_pool.items() if k not in existing_items}
     if len(allowed_items) == 0:
-        raise Exception("No allowed items remain")
-    return world_random.sample(list(allowed_items.keys()), k=1)[0]
+        logging.warning("No allowed items remain - Shop will be have filler items")
+        return get_backup_item(shop_type, existing_items, world_random)
+    return world_random.choice(list(allowed_items.keys()))
 
 
 def randomize_shops(patch_instance: "DQIXPatch", randomization_type: int) -> Dict[int, Dict]:
     # logging.warning("ITEMS_BY_SHOP_TYPE")
     # for shop_type, items in ShopData.ITEMS_BY_SHOP_TYPE.items():
-        # logging.warning(str(shop_type) + ": {" + ", ".join(["{}: {}".format(a, b) for a, b in {k: v for k, v in sorted(ShopData.ITEMS_BY_SHOP_TYPE[shop_type].items(), key=lambda item: item[1], reverse=True)}.items()]) + "}")
+    # logging.warning(str(shop_type) + ": {" + ", ".join(["{}: {}".format(a, b) for a, b in {k: v for k, v in sorted(ShopData.ITEMS_BY_SHOP_TYPE[shop_type].items(), key=lambda item: item[1], reverse=True)}.items()]) + "}")
 
     # logging.warning("ITEMS_BY_REGION")
     # for region, items in ShopData.ITEMS_BY_REGION.items():
-        # logging.warning(str(region) + ": {" + ", ".join(["{}: {}".format(a, b) for a, b in {k: v for k, v in sorted(ShopData.ITEMS_BY_REGION[region].items(), key=lambda item: item[1], reverse=True)}.items()]) + "}")
+    # logging.warning(str(region) + ": {" + ", ".join(["{}: {}".format(a, b) for a, b in {k: v for k, v in sorted(ShopData.ITEMS_BY_REGION[region].items(), key=lambda item: item[1], reverse=True)}.items()]) + "}")
 
     # logging.warning("ITEMS_BY_REGION_AND_SHOP_TYPE")
     # for region, data in ShopData.ITEMS_BY_REGION_AND_SHOP_TYPE.items():
@@ -79,7 +107,7 @@ def randomize_shops(patch_instance: "DQIXPatch", randomization_type: int) -> Dic
             ShopData.SHOP_TYPE_WEAPONS: {},
             ShopData.SHOP_TYPE_ARMOR: {},
             ShopData.SHOP_TYPE_COMMON_ITEMS: {},
-            ShopData.SHOP_TYPE_ITEMS_AND_EQUIPMENT: {},
+            ShopData.SHOP_TYPE_ALL: {},
             ShopData.SHOP_TYPE_ALL_EQUIPMENT: {},
             ShopData.SHOP_TYPE_MIXED: {}
         }
@@ -103,8 +131,7 @@ def randomize_shops(patch_instance: "DQIXPatch", randomization_type: int) -> Dic
                 for item, amount in sorted(all_items.items(), key=lambda single_item: single_item[1], reverse=True):
                     if amount >= len(unfilled_shops):
                         if amount > len(unfilled_shops):
-                            # logging.warning("{} shops left to place {} copies of item {}".format(len(unfilled_shops), amount, item))
-                            raise Exception("{} shops left to place {} copies of item {}".format(len(unfilled_shops), amount, item))
+                            logging.warning("{} shops left to place {} copies of item {} - ignoring the extras".format(len(unfilled_shops), amount, item))
                         # Item needs to be force-filled into all remaining shops
                         force_filled_shop = True
                         for shop_id in unfilled_shops:
@@ -122,17 +149,22 @@ def randomize_shops(patch_instance: "DQIXPatch", randomization_type: int) -> Dic
                 item_fill_count = shops_with_type[shop_to_fill].item_count - len(shuffled_shops[shop_to_fill].items)
 
                 for i in range(item_fill_count):
-                    new_item = get_random_valid_item(all_items, shuffled_shops[shop_to_fill].items, world_random)
-                    if new_item in shuffled_shops[shop_to_fill].items:
-                        logging.warning("Trying to add duplicate item to Shop {}: {}".format(shop_to_fill, new_item))
-                    all_items[new_item] -= 1
-                    if all_items[new_item] == 0:
-                        all_items.pop(new_item)
-                    shuffled_shops[shop_to_fill].items.append(new_item)
+                    new_item = get_random_valid_item(all_items, shuffled_shops[shop_to_fill].items, world_random, shuffled_shops[shop_to_fill].shop_type)
+                    if new_item in all_items:
+                        all_items[new_item] -= 1
+                        if all_items[new_item] == 0:
+                            all_items.pop(new_item)
+                        shuffled_shops[shop_to_fill].items.append(new_item)
             if all_items:
                 logging.warning("Still items left after filled all shops - something went wrong!")
                 logging.warning("Remaining items in pool: " + str(all_items))
             for shop_id, shop in shuffled_shops.items():
+                if len(shop.items) < shop.item_count:
+                    for _ in range(shop.item_count - len(shop.items)):
+                        backup_item = get_backup_item(shop.shop_type, shop.items, world_random)
+                        shop.items.append(backup_item)
+                        logging.warning("Filling shop {} that is missing slots with {}".format(shop_id, backup_item))
+
                 shops[shop_id] = {"items": shop.items, "shop_type": shop.shop_type}
 
         # for shop_id, shop in ShopData.SHOPS_WITH_DATA.items():
