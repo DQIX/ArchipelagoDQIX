@@ -1,7 +1,7 @@
 from typing import List
 
 from .bases import DQIXTestBase
-from ..Options import EndBoss
+from ..options import EndBoss
 
 
 class BossKeyHelper(DQIXTestBase):

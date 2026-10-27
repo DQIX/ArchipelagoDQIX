@@ -41,3 +41,13 @@ class ShopContainer:
             shop.items = relevant_data["items"]
             shop.shop_type = relevant_data["shop_type"]
             self.shops[index] = shop
+
+    def apply_shop_price_modifiers(self, data: str):
+        price_modifiers = json.loads(data)
+
+        for index, shop in enumerate(self.shops):
+            if str(shop.identifier) in price_modifiers:
+                shop.price_multiplier = price_modifiers[str(shop.identifier)]
+                self.shops[index] = shop
+            else:
+                raise Exception("No price modifiers for shop with ID {} were found - this should not happen.".format(index))

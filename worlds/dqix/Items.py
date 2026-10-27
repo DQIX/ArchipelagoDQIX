@@ -3,7 +3,7 @@ from typing import Dict, NamedTuple, Optional, List
 
 from BaseClasses import ItemClassification, Item
 from Options import OptionError
-from .Options import DQIXOptions, EndBoss
+from .options import DQIXOptions, EndBoss
 
 
 class DQIXItem(Item):

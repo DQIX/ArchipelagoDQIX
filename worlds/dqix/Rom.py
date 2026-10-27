@@ -2,7 +2,7 @@ import logging
 from typing import TYPE_CHECKING, Dict, Any, Callable
 from zipfile import ZipFile
 
-from .Options import RandomizeShops
+from .options import RandomizeShops
 from Utils import Version
 from .patch import shop_patch
 from worlds.Files import APAutoPatchInterface
@@ -41,6 +41,9 @@ class DQIXPatch(APAutoPatchInterface):
 
     def get_file(self, file: str) -> bytes:
         return PatchMethods.get_file(self, file)
+
+    def has_file(self, file: str) -> bool:
+        return PatchMethods.has_file(self, file)
 
 
 class PatchMethods:
@@ -106,6 +109,12 @@ class PatchMethods:
         if file not in patch.files:
             patch.read()
         return patch.files[file]
+
+    @staticmethod
+    def has_file(patch: DQIXPatch, file: str) -> bool:
+        if file not in patch.files:
+            patch.read()
+        return file in patch.files
 
 
 def get_base_rom_bytes() -> bytes:

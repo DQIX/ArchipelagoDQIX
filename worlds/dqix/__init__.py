@@ -9,7 +9,7 @@ from rule_builder.rules import Has, HasAll, Rule, HasAny
 from worlds.AutoWorld import World, WebWorld
 from .Items import DQIXItems, DQIXItem, all_items, all_items_dict
 from .Locations import DQIXLocation, all_locations_dict, all_locations_by_region
-from .Options import EndBoss, DQIXOptions
+from .options import EndBoss, DQIXOptions, ShopPrices
 from .Rom import DQIXPatch
 # noinspection unused-imports
 from .Client import DQIXClient
@@ -53,6 +53,10 @@ class DragonQuestIX(World):
     options_dataclass = DQIXOptions
     options: DQIXOptions
     settings: typing.ClassVar[DQIXSettings]
+
+    def generate_early(self) -> None:
+        if self.options.randomize_shop_price.value != ShopPrices.option_vanilla and self.options.shop_price_min > self.options.shop_price_max:
+            raise OptionError("Maximum shop price is lower than Minimum shop price")
 
     def create_item(self, name: str) -> "DQIXItem":
         cur_item_data = all_items_dict[name]

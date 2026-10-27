@@ -6,7 +6,7 @@ from random import Random
 from typing import TYPE_CHECKING, Dict, List
 
 from Options import OptionError
-from ..Options import RandomizeShops
+from ..options import RandomizeShops, ShopPrices
 from ..apnds.rom import Rom
 from ..game.ShopContainer import ShopContainer
 from ..game.ShopData import ShopData, ShopConfig
@@ -16,7 +16,12 @@ if TYPE_CHECKING:
 
 
 def write_patch(patch_instance: "DQIXPatch", opened_zipfile: zipfile.ZipFile) -> None:
-    opened_zipfile.writestr("shop_data.json", json.dumps(randomize_shops(patch_instance, patch_instance.world.options.randomize_shops.value)))
+    options = patch_instance.world.options
+    world_random = patch_instance.world.random
+
+    opened_zipfile.writestr("shop_data.json", json.dumps(randomize_shops(world_random, options.randomize_shops.value)))
+    if options.randomize_shop_price != ShopPrices.option_vanilla:
+        opened_zipfile.writestr("shop_price_modifiers.json", json.dumps(randomize_shop_price_modifiers(world_random, options.randomize_shop_price.value, options.shop_price_min.value, options.shop_price_max.value)))
 
 
 def patch(rom: Rom, patch_instance: "DQIXPatch") -> None:
@@ -25,6 +30,9 @@ def patch(rom: Rom, patch_instance: "DQIXPatch") -> None:
     shop_container = ShopContainer.create_from_bytes(shop_data)
 
     shop_container.apply_new_shop_data(patch_instance.get_file("shop_data.json"))
+
+    if patch_instance.has_file("shop_price_modifiers.json"):
+        shop_container.apply_shop_price_modifiers(patch_instance.get_file("shop_price_modifiers.json"))
 
     rom.files["/data/bin/menu/shopdata1.bin"] = shop_container.to_bytes()
 
@@ -121,11 +129,10 @@ def fill_shops_with_items(all_items: Dict[int, int], all_shops: Dict[int, ShopCo
     return shops
 
 
-def randomize_shops(patch_instance: "DQIXPatch", randomization_type: int) -> Dict[int, Dict]:
+def randomize_shops(world_random: Random, randomization_type: int) -> Dict[int, Dict]:
     if randomization_type == RandomizeShops.option_none:
         raise OptionError("This should not be possible - Trying to randomize shops when randomization_type is \"None\"")
     shops: Dict[int, Dict[str, List[int] | int]] = {}
-    world_random = patch_instance.world.random
 
     if randomization_type == RandomizeShops.option_same_shop_type:
         items_by_shop_type: Dict[int, Dict[int, int]] = ShopData.get_items_by_shop_type()
@@ -144,7 +151,7 @@ def randomize_shops(patch_instance: "DQIXPatch", randomization_type: int) -> Dic
         for shop_type, shops_with_type in shop_configs.items():
             all_items: Dict[int, int] = items_by_shop_type[shop_type]
 
-            shops = fill_shops_with_items(all_items, shops_with_type, world_random)
+            shops.update(fill_shops_with_items(all_items, shops_with_type, world_random))
 
     elif randomization_type == RandomizeShops.option_same_region:
         items_by_region: Dict[str, Dict[int, int]] = ShopData.get_items_by_region()
@@ -165,7 +172,7 @@ def randomize_shops(patch_instance: "DQIXPatch", randomization_type: int) -> Dic
         for region, shops_in_region in shops_configs.items():
             all_items: Dict[int, int] = items_by_region[region]
 
-            shops = fill_shops_with_items(all_items, shops_in_region, world_random)
+            shops.update(fill_shops_with_items(all_items, shops_in_region, world_random))
     elif randomization_type == RandomizeShops.option_same_shop_type_and_region:
         items_by_region_and_shop_type: Dict[str, Dict[int, Dict[int, int]]] = ShopData.get_items_by_region_and_shop_type()
 
@@ -242,3 +249,16 @@ def randomize_shops(patch_instance: "DQIXPatch", randomization_type: int) -> Dic
         shops = fill_shops_with_items(all_items, all_shops, world_random)
 
     return shops
+
+
+def randomize_shop_price_modifiers(world_random: Random, randomize_shop_price: int, min_price: int, max_price: int) -> dict[int, int]:
+    shops_with_price_modifier: Dict[int, int] = {}
+    if randomize_shop_price == ShopPrices.option_global_shared:
+        shop_price_modifier: int = world_random.randint(min_price, max_price)
+
+    for shop_id, shop_config in ShopData.get_shops_with_data().items():
+        if not shops_with_price_modifier or randomize_shop_price == ShopPrices.option_global_random:
+            shop_price_modifier: int = world_random.randint(min_price, max_price)
+        shops_with_price_modifier[shop_id] = shop_price_modifier
+
+    return shops_with_price_modifier
