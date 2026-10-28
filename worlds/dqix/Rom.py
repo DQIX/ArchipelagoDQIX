@@ -4,7 +4,7 @@ from zipfile import ZipFile
 
 from .options import RandomizeShops
 from Utils import Version
-from .patch import shop_patch
+from .patch import shop_patch, skill_patch
 from worlds.Files import APAutoPatchInterface
 from settings import get_settings
 
@@ -49,7 +49,7 @@ class DQIXPatch(APAutoPatchInterface):
 class PatchMethods:
     @staticmethod
     def write_contents(patch: DQIXPatch, opened_zipfile: ZipFile) -> None:
-        procedures: list[str] = ["base_patch"]
+        procedures: list[str] = ["base_patch", "skill_patch"]
 
         if patch.world.options.randomize_shops.value != RandomizeShops.option_none:
             procedures.append("shop_patch")
@@ -82,7 +82,8 @@ class PatchMethods:
             ],
         ] = {
             "base_patch": base_patch.patch,
-            "shop_patch": shop_patch.patch
+            "shop_patch": shop_patch.patch,
+            "skill_patch": skill_patch.patch
         }
 
         base_data = get_base_rom_bytes()
