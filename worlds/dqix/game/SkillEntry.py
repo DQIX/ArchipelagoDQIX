@@ -40,3 +40,17 @@ class SkillEntry:
         out += bytearray(int.to_bytes(self.display_category, 4, "little"))
 
         return out
+
+    def to_dict(self):
+        return {
+            "ability_id": self.ability_id,
+            "skill_tree": self.skill_tree,
+            "skill_point_cost": self.skill_point_cost,
+            "action_id": self.action_id,
+            "nature": self.nature,
+            "bonus_value": self.bonus_value,
+            "secondary_action": self.secondary_action,
+            "row_number": self.row_number,
+            "display_category": self.display_category,
+        }
+

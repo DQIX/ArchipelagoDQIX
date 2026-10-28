@@ -49,11 +49,14 @@ class DQIXPatch(APAutoPatchInterface):
 class PatchMethods:
     @staticmethod
     def write_contents(patch: DQIXPatch, opened_zipfile: ZipFile) -> None:
-        procedures: list[str] = ["base_patch", "skill_patch"]
+        procedures: list[str] = ["base_patch"]
 
         if patch.world.options.randomize_shops.value != RandomizeShops.option_none:
             procedures.append("shop_patch")
             shop_patch.write_patch(patch, opened_zipfile)
+
+        procedures.append("skill_patch")
+        skill_patch.write_patch(patch, opened_zipfile)
 
         opened_zipfile.writestr("procedures.txt", "\n".join(procedures))
 
