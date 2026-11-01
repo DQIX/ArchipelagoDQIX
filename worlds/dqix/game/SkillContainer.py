@@ -1,5 +1,4 @@
 import json
-from typing import List
 
 from ..game.SkillEntry import SkillEntry
 
@@ -44,4 +43,5 @@ class SkillContainer:
         new_skill_data: list[dict[str, int]] = json.loads(data)
 
         for skill_data in new_skill_data:
-            self.skills[skill_data["ability_id"]].skill_tree = skill_data["skill_tree"]
+            # self.skills[skill_data["ability_id"]].skill_tree = skill_data["skill_tree"]
+            self.skills[skill_data["ability_id"]].row_number = skill_data["row_number"]
