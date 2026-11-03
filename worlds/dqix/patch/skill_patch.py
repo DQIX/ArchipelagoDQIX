@@ -1,7 +1,7 @@
 import json
 import zipfile
 from random import Random
-from typing import TYPE_CHECKING, Dict
+from typing import TYPE_CHECKING
 
 from ..apnds.rom import Rom
 from ..game.SkillContainer import SkillContainer
@@ -26,32 +26,7 @@ def patch(rom: Rom, patch_instance: "DQIXPatch") -> None:
 
 
 def randomize_skill_trees(world_random: Random) -> list[dict[str, int]]:
-    new_skills: list[Dict[str, int]] = []
-    skills_by_skill_tree: Dict[int, int] = {}
-    # unfilled_skill_trees = [i for i in range(0, 26)]
     shuffled_skills = SkillData.get_all_skills()
     world_random.shuffle(shuffled_skills)
-    row_number_per_skill_tree: Dict[int, int] = {}
 
-    for skill in shuffled_skills:
-        # target_tree = world_random.choice(unfilled_skill_trees)
-        # skill["skill_tree"] = target_tree
-        # if target_tree not in skills_by_skill_tree:
-        #     skills_by_skill_tree[target_tree] = 0
-        # skills_by_skill_tree[target_tree] += 1
-        # skill["row_number"] = target_tree * 11 + skills_by_skill_tree[target_tree]
-        skill_tree = skill["skill_tree"]
-        if skill_tree not in row_number_per_skill_tree:
-            row_number_per_skill_tree[skill_tree] = 0
-        row_number = (skill_tree - 1) * 11 + row_number_per_skill_tree[skill_tree]
-        skill["row_number"] = row_number
-
-        new_skills.append(skill)
-        row_number_per_skill_tree[skill_tree] = row_number_per_skill_tree[skill_tree] + 1
-
-        # if skills_by_skill_tree[target_tree] == 11:
-        #     unfilled_skill_trees.remove(target_tree)
-
-    new_skills = sorted(new_skills, key=lambda d: d["row_number"])
-
-    return new_skills
+    return [skill.to_dict() for skill in shuffled_skills]

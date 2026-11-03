@@ -8,7 +8,7 @@ class SkillContainer:
 
     def __init__(self):
         self.start_bytes: bytes
-        self.skills: dict[int, SkillEntry] = {}
+        self.skills: list[SkillEntry] = []
         self.end_bytes: bytes
 
     @staticmethod
@@ -23,7 +23,7 @@ class SkillContainer:
         rest_data = data[0x28:0x3148].split(SkillContainer.divider_bytes)
         for skill_data in rest_data:
             entry = SkillEntry(skill_data)
-            container.skills[entry.ability_id] = entry
+            container.skills.append(entry)
 
         print("All Skills done, yeah!")
         print("Remainder is:")
@@ -34,7 +34,7 @@ class SkillContainer:
     def to_bytes(self):
         out = bytearray()
         out += self.start_bytes
-        out += self.divider_bytes.join([skill.to_bytes() for skill in self.skills.values()])
+        out += self.divider_bytes.join([skill.to_bytes() for skill in self.skills])
         out += self.end_bytes
 
         return bytes(out)
@@ -42,6 +42,15 @@ class SkillContainer:
     def apply_new_skills(self, data: str):
         new_skill_data: list[dict[str, int]] = json.loads(data)
 
-        for skill_data in new_skill_data:
-            # self.skills[skill_data["ability_id"]].skill_tree = skill_data["skill_tree"]
-            self.skills[skill_data["ability_id"]].row_number = skill_data["row_number"]
+        new_skills = []
+        for skill in self.skills:
+            new_data = new_skill_data.pop()
+            skill.ability_id = new_data["skill_id"]
+            skill.action_id = new_data["action_id"]
+            skill.nature = new_data["nature"]
+            skill.bonus_value = new_data["bonus"]
+            skill.secondary_action = new_data["secondary_action"]
+            skill.display_category = new_data["display_category"]
+            new_skills.append(skill)
+
+        self.skills = new_skills

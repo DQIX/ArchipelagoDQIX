@@ -53,4 +53,3 @@ class SkillEntry:
             "row_number": self.row_number,
             "display_category": self.display_category,
         }
-
