@@ -1,3 +1,6 @@
+from .SkillData import SkillData
+from .SkillLabelDefinition import SkillLabelDefinition
+from .SkillNameTable import SkillLabelTable
 from ..skill.SkillEntry import SkillEntry
 
 
@@ -15,17 +18,10 @@ class SkillContainer:
         container.start_bytes = data[0x0:0x28]
         container.end_bytes = data[0x3148:]
 
-        print("Start bytes:")
-        print(container.start_bytes)
-
         rest_data = data[0x28:0x3148].split(SkillContainer.divider_bytes)
         for skill_data in rest_data:
             entry = SkillEntry(skill_data)
             container.skills.append(entry)
-
-        print("All Skills done, yeah!")
-        print("Remainder is:")
-        print(container.end_bytes)
 
         return container
 
@@ -51,5 +47,32 @@ class SkillContainer:
 
         self.skills = new_skills
 
-    def update_skill_labels(self, new_skill_data: list[dict[str, int]]):
-        pass
+    def update_skill_labels(self, skill_table: SkillLabelTable) -> SkillLabelTable:
+        new_list: list[SkillLabelDefinition] = []
+
+        original_skill_labels_by_tree_and_cost: dict[int, dict[int, SkillLabelDefinition]] = {}
+        modified_skill_labels_by_tree_and_cost: dict[int, dict[int, SkillLabelDefinition]] = {}
+
+        for label in skill_table.skill_labels:
+            if label.tree not in original_skill_labels_by_tree_and_cost:
+                original_skill_labels_by_tree_and_cost[label.tree] = {}
+            original_skill_labels_by_tree_and_cost[label.tree][label.cost] = label
+
+        for skill in self.skills:
+            orig_skill = SkillData.get_original_skill_by_ability_id(skill.ability_id)
+
+            skill_definition = original_skill_labels_by_tree_and_cost[orig_skill.tree][orig_skill.cost]
+            skill_definition.tree = skill.skill_tree
+            skill_definition.cost = skill.skill_point_cost
+
+            if skill_definition.tree not in modified_skill_labels_by_tree_and_cost:
+                modified_skill_labels_by_tree_and_cost[skill_definition.tree] = {}
+            modified_skill_labels_by_tree_and_cost[skill_definition.tree][skill_definition.cost] = skill_definition
+
+        for tree, skills in sorted(modified_skill_labels_by_tree_and_cost.items(), key=lambda x: x[0]):
+            for skill_def in sorted(skills.values(), key=lambda x: x.cost if x.cost > 0 else 1000):
+                new_list.append(skill_def)
+
+        skill_table.skill_labels = new_list
+
+        return skill_table

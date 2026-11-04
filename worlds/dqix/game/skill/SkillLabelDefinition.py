@@ -13,11 +13,11 @@ class SkillLabelDefinition:
         out = bytearray()
 
         out += self.magic_bytes
-        out += int.to_bytes(self.index, 4)
-        out += int.to_bytes(self.name_offset, 4)
-        out += int.to_bytes(1 if self.grants_ability_flag else 0, 4)
-        out += int.to_bytes(self.tree, 4)
-        out += int.to_bytes(self.cost, 4)
-        out += int.to_bytes(1 if self.append_icon else 0, 4)
+        out += int.to_bytes(self.index, 4, "little")
+        out += int.to_bytes(self.name_offset, 4, "little")
+        out += int.to_bytes(1 if self.grants_ability_flag else 0, 4, "little")
+        out += int.to_bytes(self.tree, 4, "little")
+        out += int.to_bytes(self.cost, 4, "little")
+        out += int.to_bytes(1 if self.append_icon else 0, 4, "little")
 
         return out

@@ -1,11 +1,13 @@
 class SkillDetails:
-    def __init__(self, skill_id: int, action_id: int, bonus: int, display_category: int, nature: int, secondary_action: int):
+    def __init__(self, skill_id: int, action_id: int, bonus: int, display_category: int, nature: int, secondary_action: int, tree: int, cost: int):
         self.skill_id = skill_id
         self.action_id = action_id
         self.bonus = bonus
         self.display_category = display_category
         self.nature = nature
         self.secondary_action = secondary_action
+        self.tree = tree
+        self.cost = cost
 
     def to_dict(self) -> dict[str, int]:
         return {

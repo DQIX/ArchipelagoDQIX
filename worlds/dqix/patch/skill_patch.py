@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Dict
 from ..apnds.rom import Rom
 from ..game.skill.SkillContainer import SkillContainer
 from ..game.skill.SkillData import SkillData
-from ..game.skill.SkillLabelTable import SkillLabelTable
+from ..game.skill.SkillNameTable import SkillLabelTable
 from ..gpc2 import GPC2
 
 if TYPE_CHECKING:
@@ -25,7 +25,7 @@ def patch(rom: Rom, patch_instance: "DQIXPatch") -> None:
 
     skill_data = bytearray(rom.files["/data/prm/skilltable.bin"])
     skill_container = SkillContainer.create_from_bytes(skill_data)
-    skill_container.apply_new_skills(new_skill_data)
+    skill_container.apply_new_skills(new_skill_data.copy())
 
     rom.files["/data/prm/skilltable.bin"] = skill_container.to_bytes()
 
@@ -37,11 +37,10 @@ def patch(rom: Rom, patch_instance: "DQIXPatch") -> None:
         tables[filename] = SkillLabelTable.create_from_bytes(file)
 
     for filename, skill_table in tables.items():
-        archive.replace(filename, skill_table.to_bytes())
+        new_skill_table = skill_container.update_skill_labels(skill_table)
+        archive.replace(filename, new_skill_table.to_bytes())
 
-    rom.files["/data/prm/skilltable.bin"] = archive.to_bytes()
-
-    skill_container.update_skill_labels(new_skill_data)
+    rom.files["/data/prm/sklname.gp2"] = archive.to_bytes()
 
 
 def randomize_skill_trees(world_random: Random) -> list[dict[str, int]]:
