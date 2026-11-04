@@ -39,9 +39,7 @@ class SkillContainer:
 
         return bytes(out)
 
-    def apply_new_skills(self, data: str):
-        new_skill_data: list[dict[str, int]] = json.loads(data)
-
+    def apply_new_skills(self, new_skill_data: list[dict[str, int]]):
         new_skills = []
         for skill in self.skills:
             new_data = new_skill_data.pop()
@@ -54,3 +52,6 @@ class SkillContainer:
             new_skills.append(skill)
 
         self.skills = new_skills
+
+    def update_skill_labels(self, new_skill_data: list[dict[str, int]]):
+        pass

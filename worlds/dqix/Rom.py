@@ -2,11 +2,11 @@ import logging
 from typing import TYPE_CHECKING, Dict, Any, Callable
 from zipfile import ZipFile
 
-from .options import RandomizeShops
 from Utils import Version
-from .patch import shop_patch, skill_patch
-from worlds.Files import APAutoPatchInterface
 from settings import get_settings
+from worlds.Files import APAutoPatchInterface
+from .options import RandomizeShops, RandomizeSkills
+from .patch import shop_patch, skill_patch
 
 if TYPE_CHECKING:
     from worlds.dqix import DragonQuestIX
@@ -55,8 +55,9 @@ class PatchMethods:
             procedures.append("shop_patch")
             shop_patch.write_patch(patch, opened_zipfile)
 
-        procedures.append("skill_patch")
-        skill_patch.write_patch(patch, opened_zipfile)
+        if patch.world.options.randomize_skills.value != RandomizeSkills.option_vanilla:
+            procedures.append("skill_patch")
+            skill_patch.write_patch(patch, opened_zipfile)
 
         opened_zipfile.writestr("procedures.txt", "\n".join(procedures))
 
