@@ -1,11 +1,13 @@
 import json
 import zipfile
 from random import Random
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict
 
 from ..apnds.rom import Rom
-from ..game.SkillContainer import SkillContainer
-from ..game.SkillData import SkillData
+from ..game.skill.SkillContainer import SkillContainer
+from ..game.skill.SkillData import SkillData
+from ..game.skill.SkillLabelTable import SkillLabelTable
+from ..gpc2 import GPC2
 
 if TYPE_CHECKING:
     from .. import DQIXPatch
@@ -26,6 +28,13 @@ def patch(rom: Rom, patch_instance: "DQIXPatch") -> None:
     skill_container.apply_new_skills(new_skill_data)
 
     rom.files["/data/prm/skilltable.bin"] = skill_container.to_bytes()
+
+    name_data = rom.files["/data/prm/sklname.gp2"]
+    archive = GPC2(name_data)
+    tables: Dict[str, SkillLabelTable] = {}
+
+    for filename, file in archive.files.items():
+        tables[filename] = SkillLabelTable.create_from_bytes(file)
 
     skill_container.update_skill_labels(new_skill_data)
 

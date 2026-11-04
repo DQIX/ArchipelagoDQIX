@@ -1,6 +1,4 @@
-import json
-
-from ..game.SkillEntry import SkillEntry
+from ..skill.SkillEntry import SkillEntry
 
 
 class SkillContainer:

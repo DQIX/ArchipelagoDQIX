@@ -1,6 +1,6 @@
 from typing import List, Dict
 
-from ..game.SkillDetails import SkillDetails
+from game.skill.SkillDetails import SkillDetails
 
 
 class SkillData:
