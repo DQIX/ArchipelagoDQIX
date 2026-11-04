@@ -36,6 +36,11 @@ def patch(rom: Rom, patch_instance: "DQIXPatch") -> None:
     for filename, file in archive.files.items():
         tables[filename] = SkillLabelTable.create_from_bytes(file)
 
+    for filename, skill_table in tables.items():
+        archive.replace(filename, skill_table.to_bytes())
+
+    rom.files["/data/prm/skilltable.bin"] = archive.to_bytes()
+
     skill_container.update_skill_labels(new_skill_data)
 
 

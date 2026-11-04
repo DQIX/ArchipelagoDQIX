@@ -11,9 +11,9 @@ class SkillLabelTable:
         self.string_count: int
         self.magic_starting_bytes: bytes
 
-        self.skill_label_definitions: list[SkillLabelDefinition] = []
-        self.skill_texts: list = []
-        self.timestamp: bytes
+        self.skill_labels: list[SkillLabelDefinition] = []
+
+        self.remainder_magic: bytes
 
     @staticmethod
     def create_from_bytes(data: bytearray):
@@ -29,19 +29,36 @@ class SkillLabelTable:
             starting_offset = 0x20 + i * 0x20
             end_offset = starting_offset + 0x20
             label = SkillLabelDefinition(data[starting_offset:end_offset])
-            container.skill_label_definitions.append(label)
 
-            text_start = container.string_pool_offset + label.name_offset
-            text_end = data[text_start:].find(b'\x00')
-            if text_end == -1:
-                print("Could not find text end for skill: ")
-                print(label.index)
-                print(label.name_offset)
-                print(label.append_icon)
-                print(label.grants_ability_flag)
-                print(label.cost)
-                print(label.tree)
+            if label.name_offset == int('0xFFFFFFFF', 16):
+                text = ''
             else:
-                container.skill_texts.append(str(data[text_start:text_start + text_end]))
+                text_start = container.string_pool_offset + label.name_offset
+                text_end = data[text_start:].find(b'\x00')
+                if text_end == -1:
+                    raise "Could not find text end for skill - this should not happen!"
+                else:
+                    text = str(data[text_start:text_start + text_end])
+
+            label.text = text
+            container.skill_labels.append(label)
+
+        container.remainder_magic = data[container.string_pool_offset + container.string_pool_size:]
 
         return container
+
+    def to_bytes(self):
+        out: bytearray = bytearray()
+
+        out += int.to_bytes(self.record_count, 4)
+        out += int.to_bytes(self.string_pool_offset, 4)
+        out += int.to_bytes(self.string_pool_size, 4)
+        out += int.to_bytes(self.string_count, 4)
+        out += self.magic_starting_bytes
+
+        for label in self.skill_labels:
+            out += label.to_bytes()
+
+        out += self.remainder_magic
+
+        return out

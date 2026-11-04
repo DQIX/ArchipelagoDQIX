@@ -267,7 +267,7 @@ class GPC2:
     Construct from archive bytes or use :meth:`open` for a filesystem path.
     ``files`` maps case-sensitive member paths to decompressed bytes. Use
     :meth:`replace`, :meth:`add`, and :meth:`remove` to mark edits, then
-    :meth:`save` to rebuild. Direct mutation of ``files`` is not tracked.
+    :meth:`to_bytes` or :meth:`save` to rebuild. Direct mutation of ``files`` is not tracked.
 
     ``whole`` indicates the stored-whole layout. ``index_codec`` and
     ``name_codec`` describe the original archive's table encodings.
@@ -415,8 +415,8 @@ class GPC2:
             warnings.warn(f"{name}: Huffman-{4 if codec == 2 else 8} encoding failed; using LZ77", RuntimeWarning)
             return fallback
 
-    def save(self,path, *, allow_codec_fallback=True, verify=True):
-        """Write a rebuilt archive to ``path``.
+    def to_bytes(self, *, allow_codec_fallback=True, verify=True):
+        """Build and return the complete GPC2 archive as ``bytes``.
 
         Unchanged members retain their original compressed data. Modified
         Huffman members may fall back to LZ77 when ``allow_codec_fallback``
@@ -424,7 +424,7 @@ class GPC2:
         filename-table codecs are never silently changed.
 
         With ``verify=True`` (the default), reparse the output and compare
-        all decoded members before writing it to disk. Raises ValueError for
+        all decoded members before returning bytes. Raises ValueError for
         malformed or unrepresentable archives and NotImplementedError for
         unsupported index encodings.
         """
@@ -515,7 +515,16 @@ class GPC2:
             check = GPC2(output)
             if check.files != self.files:
                 raise ValueError("Rebuilt archive failed independent reopen/content comparison")
-        # Write only after all validation has succeeded; avoid partial files.
+        return output
+
+    def save(self, path, *, allow_codec_fallback=True, verify=True):
+        """Rebuild the archive and write it to ``path`` after verification.
+
+        See :meth:`to_bytes` for in-memory serialization and codec options.
+        """
+        output = self.to_bytes(
+            allow_codec_fallback=allow_codec_fallback, verify=verify
+        )
         Path(path).write_bytes(output)
 
 

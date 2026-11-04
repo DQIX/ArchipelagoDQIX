@@ -1,5 +1,6 @@
 class SkillLabelDefinition:
     def __init__(self, data: bytes):
+        self.text = None
         self.magic_bytes: bytes = data[0x0:0x8]
         self.index: int = int.from_bytes(data[0x8:0xC], "little")
         self.name_offset: int = int.from_bytes(data[0xC:0x10], "little")
@@ -7,3 +8,16 @@ class SkillLabelDefinition:
         self.tree: int = int.from_bytes(data[0x14:0x18], "little")
         self.cost: int = int.from_bytes(data[0x18:0x1C], "little")
         self.append_icon: bool = True if int.from_bytes(data[0x1C:0x20], "little") == 1 else False
+
+    def to_bytes(self):
+        out = bytearray()
+
+        out += self.magic_bytes
+        out += int.to_bytes(self.index, 4)
+        out += int.to_bytes(self.name_offset, 4)
+        out += int.to_bytes(1 if self.grants_ability_flag else 0, 4)
+        out += int.to_bytes(self.tree, 4)
+        out += int.to_bytes(self.cost, 4)
+        out += int.to_bytes(1 if self.append_icon else 0, 4)
+
+        return out
