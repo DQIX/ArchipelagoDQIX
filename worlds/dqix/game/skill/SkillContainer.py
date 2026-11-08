@@ -1,6 +1,6 @@
 from .SkillData import SkillData
 from .SkillLabelDefinition import SkillLabelDefinition
-from .SkillNameTable import SkillLabelTable
+from .SkillNameTable import SkillNamingTable
 from ..skill.SkillEntry import SkillEntry
 
 
@@ -47,32 +47,53 @@ class SkillContainer:
 
         self.skills = new_skills
 
-    def update_skill_labels(self, skill_table: SkillLabelTable) -> SkillLabelTable:
+    def update_skill_labels(self, skill_table: SkillNamingTable) -> SkillNamingTable:
         new_list: list[SkillLabelDefinition] = []
+        original_naming_data_by_tree_and_cost: dict[int, dict[int, dict[str, int | bool]]] = {}
+        new_skills_by_tree_and_cost = self.get_skills_by_tree_and_cost()
 
-        original_skill_labels_by_tree_and_cost: dict[int, dict[int, SkillLabelDefinition]] = {}
-        modified_skill_labels_by_tree_and_cost: dict[int, dict[int, SkillLabelDefinition]] = {}
-
+        # Mapping of the naming data for a given skill / position in the original skill tree
         for label in skill_table.skill_labels:
-            if label.tree not in original_skill_labels_by_tree_and_cost:
-                original_skill_labels_by_tree_and_cost[label.tree] = {}
-            original_skill_labels_by_tree_and_cost[label.tree][label.cost] = label
+            if label.tree not in original_naming_data_by_tree_and_cost:
+                original_naming_data_by_tree_and_cost[label.tree] = {}
+            original_naming_data_by_tree_and_cost[label.tree][label.cost] = {
+                "text_offset": label.text_offset,
+                "append_icon": label.append_icon
+            }
 
-        for skill in self.skills:
-            orig_skill = SkillData.get_original_skill_by_ability_id(skill.ability_id)
+        """
+        Wir suchen den korrekten Eintrag für den Skill in Tree X und Cost Y, nachdem der Randomizer am Werk war
+        Wir haben die vanilla Daten mit der Zuordnung: Tree X und Cost Y => passende Bezeichnung und Icon Ja/Nein
+        
+        Basierend auf unseren randomized skills, die ihre eigenen position und cost haben jetzt, müssen wir die bestehenden Labels updaten,
+        mit korrekten Text-Offset und Icon anzeigen Ja/Nein
+        
+        Für jedes bestehende Label: Was sind die neuen Werte für dieses Label an Tree X und Cost Y?
+        => Den Skill holen, der jetzt neu an Tree X und Cost Y liegt. self.skills nach tree und cost
+          => Für diese Ability-ID: Text-Offset herholen aus Original-Liste
+          => Daten für Ability-ID Z für das aktuelle Label anwenden   
+        """
 
-            skill_definition = original_skill_labels_by_tree_and_cost[orig_skill.tree][orig_skill.cost]
-            skill_definition.tree = skill.skill_tree
-            skill_definition.cost = skill.skill_point_cost
+        for i, label in enumerate(skill_table.skill_labels):
+            if label.tree == 0:
+                continue
+            new_ability_id: int = new_skills_by_tree_and_cost[label.tree][label.cost]
+            original_tree, original_cost = SkillData.get_original_tree_and_cost_by_ability_id(new_ability_id)
 
-            if skill_definition.tree not in modified_skill_labels_by_tree_and_cost:
-                modified_skill_labels_by_tree_and_cost[skill_definition.tree] = {}
-            modified_skill_labels_by_tree_and_cost[skill_definition.tree][skill_definition.cost] = skill_definition
-
-        for tree, skills in sorted(modified_skill_labels_by_tree_and_cost.items(), key=lambda x: x[0]):
-            for skill_def in sorted(skills.values(), key=lambda x: x.cost if x.cost > 0 else 1000):
-                new_list.append(skill_def)
+            # noinspection bad-assignment
+            label.append_icon = original_naming_data_by_tree_and_cost[original_tree][original_cost]["append_icon"]
+            label.text_offset = original_naming_data_by_tree_and_cost[original_tree][original_cost]["text_offset"]
+            new_list.append(label)
 
         skill_table.skill_labels = new_list
 
         return skill_table
+
+    def get_skills_by_tree_and_cost(self) -> dict[int, dict[int, int]]:
+        out = {}
+        for skill in self.skills:
+            if skill.skill_tree not in out:
+                out[skill.skill_tree] = {}
+            out[skill.skill_tree][skill.skill_point_cost] = skill.ability_id
+
+        return out

@@ -1,6 +1,6 @@
 from typing import List, Dict
 
-from game.skill.SkillDetails import SkillDetails
+from ...game.skill.SkillDetails import SkillDetails
 
 
 class SkillData:
@@ -360,10 +360,10 @@ class SkillData:
         return all_skills
 
     @staticmethod
-    def get_original_skill_by_ability_id(ability_id: int) -> SkillDetails:
+    def get_original_tree_and_cost_by_ability_id(ability_id: int) -> tuple[int, int]:
         if not SkillData.SKILLS_BY_ABILITY_ID:
             for tree, skills in SkillData.SKILLS_BY_SKILL_TREE.items():
                 for skill in skills:
                     SkillData.SKILLS_BY_ABILITY_ID[skill.skill_id] = skill
 
-        return SkillData.SKILLS_BY_ABILITY_ID[ability_id]
+        return SkillData.SKILLS_BY_ABILITY_ID[ability_id].tree, SkillData.SKILLS_BY_ABILITY_ID[ability_id].cost

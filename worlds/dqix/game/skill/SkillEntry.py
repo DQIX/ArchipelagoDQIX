@@ -1,7 +1,7 @@
 class SkillEntry:
     def __init__(self, byte_data: bytes):
         """
-        +0x0 4 bytes Ability ID, e.g 12 for "Mercurial Thrust"
+        +0x0 4 bytes Ability ID, e.g. 12 for "Mercurial Thrust"
         +0x4 4 bytes skill tree (1 - 26)
         +0x8 4 bytes skill point cost to learn (total for tree)
         +0xA 4 bytes actionId learned when gaining the ability

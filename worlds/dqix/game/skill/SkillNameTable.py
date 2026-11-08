@@ -1,7 +1,7 @@
 from ...game.skill.SkillLabelDefinition import SkillLabelDefinition
 
 
-class SkillLabelTable:
+class SkillNamingTable:
     divider_bytes = bytes.fromhex("66000651 05FFFFFF")
 
     def __init__(self):
@@ -17,7 +17,7 @@ class SkillLabelTable:
 
     @staticmethod
     def create_from_bytes(data: bytearray):
-        container = SkillLabelTable()
+        container = SkillNamingTable()
 
         container.record_count = int.from_bytes(data[0x0:0x4], "little")
         container.string_pool_offset = int.from_bytes(data[0x4:0x8], "little")
@@ -30,17 +30,6 @@ class SkillLabelTable:
             end_offset = starting_offset + 0x20
             label = SkillLabelDefinition(data[starting_offset:end_offset])
 
-            # if label.name_offset == int('0xFFFFFFFF', 16):
-            #     text = ''
-            # else:
-            #     text_start = container.string_pool_offset + label.name_offset
-            #     text_end = data[text_start:].find(b'\x00')
-            #     if text_end == -1:
-            #         raise "Could not find text end for skill - this should not happen!"
-            #     else:
-            #         text = str(data[text_start:text_start + text_end])
-            #
-            # label.text = text
             container.skill_labels.append(label)
 
         container.remainder_magic = data[container.string_pool_offset:]

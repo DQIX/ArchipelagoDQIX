@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Dict
 from ..apnds.rom import Rom
 from ..game.skill.SkillContainer import SkillContainer
 from ..game.skill.SkillData import SkillData
-from ..game.skill.SkillNameTable import SkillLabelTable
+from ..game.skill.SkillNameTable import SkillNamingTable
 from ..gpc2 import GPC2
 
 if TYPE_CHECKING:
@@ -31,10 +31,10 @@ def patch(rom: Rom, patch_instance: "DQIXPatch") -> None:
 
     name_data = rom.files["/data/prm/sklname.gp2"]
     archive = GPC2(name_data)
-    tables: Dict[str, SkillLabelTable] = {}
+    tables: Dict[str, SkillNamingTable] = {}
 
     for filename, file in archive.files.items():
-        tables[filename] = SkillLabelTable.create_from_bytes(file)
+        tables[filename] = SkillNamingTable.create_from_bytes(file)
 
     for filename, skill_table in tables.items():
         new_skill_table = skill_container.update_skill_labels(skill_table)
