@@ -1,3 +1,5 @@
+import logging
+
 from .SkillData import SkillData
 from .SkillLabelDefinition import SkillLabelDefinition
 from .SkillNameTable import SkillNamingTable
@@ -80,9 +82,15 @@ class SkillContainer:
             new_ability_id: int = new_skills_by_tree_and_cost[label.tree][label.cost]
             original_tree, original_cost = SkillData.get_original_tree_and_cost_by_ability_id(new_ability_id)
 
+            logging.warning("Handling Skill Label for Tree = {} and Cost = {}: Ability ID is {}".format(label.tree, label.cost, new_ability_id))
+            logging.warning("Orig Tree = {} and Orig Cost = {}".format(original_tree, original_cost))
+
+            logging.warning("Offset Old: {} | Offset new: {}".format(label.text_offset, original_naming_data_by_tree_and_cost[original_tree][original_cost]["text_offset"]))
             # noinspection bad-assignment
             label.append_icon = original_naming_data_by_tree_and_cost[original_tree][original_cost]["append_icon"]
             label.text_offset = original_naming_data_by_tree_and_cost[original_tree][original_cost]["text_offset"]
+
+            logging.warning("Append Icon: {}".format("yes" if label.append_icon else "no"))
             new_list.append(label)
 
         skill_table.skill_labels = new_list
