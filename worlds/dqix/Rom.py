@@ -2,11 +2,12 @@ import logging
 from typing import TYPE_CHECKING, Dict, Any, Callable
 from zipfile import ZipFile
 
-from .options import RandomizeShops
 from Utils import Version
-from .patch import shop_patch
-from worlds.Files import APAutoPatchInterface
 from settings import get_settings
+from worlds.Files import APAutoPatchInterface
+from .options import RandomizeShops
+from .patch import shop_patch
+from ..dqix import ShopPrices
 
 if TYPE_CHECKING:
     from worlds.dqix import DragonQuestIX
@@ -51,7 +52,7 @@ class PatchMethods:
     def write_contents(patch: DQIXPatch, opened_zipfile: ZipFile) -> None:
         procedures: list[str] = ["base_patch"]
 
-        if patch.world.options.randomize_shops.value != RandomizeShops.option_none:
+        if patch.world.options.randomize_shops.value != RandomizeShops.option_none or patch.world.options.randomize_shop_price.value != ShopPrices.default:
             procedures.append("shop_patch")
             shop_patch.write_patch(patch, opened_zipfile)
 
