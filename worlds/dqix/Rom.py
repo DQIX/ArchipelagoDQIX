@@ -7,10 +7,10 @@ from settings import get_settings
 from worlds.Files import APAutoPatchInterface
 from .options import RandomizeShops
 from .patch import shop_patch
-from ..dqix import ShopPrices
 
 if TYPE_CHECKING:
-    from worlds.dqix import DragonQuestIX
+    from ..dqix import DragonQuestIX
+    from ..dqix import ShopPrices
 
 
 class DQIXPatch(APAutoPatchInterface):
