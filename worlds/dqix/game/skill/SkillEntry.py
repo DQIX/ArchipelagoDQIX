@@ -1,3 +1,6 @@
+import struct
+
+
 class SkillEntry:
     def __init__(self, byte_data: bytes):
         """
@@ -12,34 +15,14 @@ class SkillEntry:
         +0xA 4 bytes display category
         :param byte_data:
         """
-        self.ability_id = int.from_bytes(byte_data[0x0:0x4], "little")
-        self.skill_tree = int.from_bytes(byte_data[0x4:0x8], "little")
-        self.skill_point_cost = int.from_bytes(byte_data[0x8:0xC], "little")
-        self.action_id = int.from_bytes(byte_data[0xC:0x10], "little")
-        self.nature = int.from_bytes(byte_data[0x10:0x14], "little")
-        self.bonus_value = int.from_bytes(byte_data[0x14:0x18], "little")
-        self.secondary_action = int.from_bytes(byte_data[0x18:0x1C], "little")
-        self.row_number = int.from_bytes(byte_data[0x1C:0x20], "little")
-        self.display_category = int.from_bytes(byte_data[0x20:0x24], "little")
+        self.ability_id, self.skill_tree, self.skill_point_cost, self.action_id, self.nature, self.bonus_value, self.secondary_action, self.row_number, self.display_category = struct.unpack("<9I", byte_data)
 
     def to_bytes(self):
         """
         Transforms the SkillEntry back into it's corresponding bytes
         :return:
         """
-        out = bytearray()
-
-        out += bytearray(int.to_bytes(self.ability_id, 4, "little"))
-        out += bytearray(int.to_bytes(self.skill_tree, 4, "little"))
-        out += bytearray(int.to_bytes(self.skill_point_cost, 4, "little"))
-        out += bytearray(int.to_bytes(self.action_id, 4, "little"))
-        out += bytearray(int.to_bytes(self.nature, 4, "little"))
-        out += bytearray(int.to_bytes(self.bonus_value, 4, "little"))
-        out += bytearray(int.to_bytes(self.secondary_action, 4, "little"))
-        out += bytearray(int.to_bytes(self.row_number, 4, "little"))
-        out += bytearray(int.to_bytes(self.display_category, 4, "little"))
-
-        return out
+        return struct.pack('<9I', self.ability_id, self.skill_tree, self.skill_point_cost, self.action_id, self.nature, self.bonus_value, self.secondary_action, self.row_number, self.display_category)
 
     def to_dict(self):
         return {

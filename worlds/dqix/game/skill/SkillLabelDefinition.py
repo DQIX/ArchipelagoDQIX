@@ -1,23 +1,18 @@
+import struct
+
+
 class SkillLabelDefinition:
     def __init__(self, data: bytes):
         self.magic_bytes: bytes = data[0x0:0x8]
-        self.index: int = int.from_bytes(data[0x8:0xC], "little")
-        self.text_offset: int = int.from_bytes(data[0xC:0x10], "little")
+        self.index, self.text_offset, grants_ability_flag, self.tree, self.cost, append_icon = struct.unpack("<IIIIII", data[0x8:])
+        self.grants_ability_flag: bool = bool(grants_ability_flag)
+        self.append_icon: bool = bool(append_icon)
         # self.text_offset: int = 27
-        self.grants_ability_flag: bool = True if int.from_bytes(data[0x10:0x14], "little") == 1 else False
-        self.tree: int = int.from_bytes(data[0x14:0x18], "little")
-        self.cost: int = int.from_bytes(data[0x18:0x1C], "little")
-        self.append_icon: bool = True if int.from_bytes(data[0x1C:0x20], "little") == 1 else False
 
     def to_bytes(self):
         out = bytearray()
 
         out += self.magic_bytes
-        out += int.to_bytes(self.index, 4, "little")
-        out += int.to_bytes(self.text_offset, 4, "little")
-        out += int.to_bytes(1 if self.grants_ability_flag else 0, 4, "little")
-        out += int.to_bytes(self.tree, 4, "little")
-        out += int.to_bytes(self.cost, 4, "little")
-        out += int.to_bytes(1 if self.append_icon else 0, 4, "little")
+        out += struct.pack("<IIIIII", self.index, self.text_offset, 1 if self.grants_ability_flag else 0, self.tree, self.cost, 1 if self.append_icon else 0)
 
         return out

@@ -1,3 +1,5 @@
+import struct
+
 from ...game.skill.SkillLabelDefinition import SkillLabelDefinition
 
 
@@ -19,10 +21,7 @@ class SkillNamingTable:
     def create_from_bytes(data: bytearray):
         container = SkillNamingTable()
 
-        container.record_count = int.from_bytes(data[0x0:0x4], "little")
-        container.string_pool_offset = int.from_bytes(data[0x4:0x8], "little")
-        container.string_pool_size = int.from_bytes(data[0x8:0xB], "little")
-        container.string_count = int.from_bytes(data[0xB:0x10], "little")
+        container.record_count, container.string_pool_offset, container.string_pool_size, container.string_count = struct.unpack("<IIII", data[0x0:0x10])
         container.magic_starting_bytes = data[0x10:0x20]
 
         for i in range(287):
@@ -39,10 +38,8 @@ class SkillNamingTable:
     def to_bytes(self):
         out: bytearray = bytearray()
 
-        out += int.to_bytes(self.record_count, 4, "little")
-        out += int.to_bytes(self.string_pool_offset, 4, "little")
-        out += int.to_bytes(self.string_pool_size, 4, "little")
-        out += int.to_bytes(self.string_count, 4, "little")
+        out += struct.pack("<IIII", self.record_count, self.string_pool_offset, self.string_pool_size, self.string_count)
+
         out += self.magic_starting_bytes
 
         for label in self.skill_labels:
