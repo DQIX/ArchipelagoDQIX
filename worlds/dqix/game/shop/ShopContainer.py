@@ -1,7 +1,7 @@
 import json
 from typing import List
 
-from game.shop.Shop import Shop
+from ...game.shop.Shop import Shop
 
 
 class ShopContainer:
