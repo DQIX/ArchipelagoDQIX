@@ -59,7 +59,8 @@ def get_backup_item(shop_type: int, current_items: List[int], world_random: Rand
     replacements = [item for item in replacements if item not in current_items]
 
     if len(replacements) == 0:
-        raise Exception("Could not fill shop with replacements - this should not usually happen.", shop_type, current_items)
+        logging.warning("Could not fill shop with replacements - this should not usually happen.", shop_type, current_items)
+        return 0
 
     return world_random.choice(replacements)
 
@@ -122,7 +123,7 @@ def fill_shops_with_items(all_items: Dict[int, int], all_shops: Dict[int, ShopCo
             for _ in range(missing_item_count):
                 backup_item = get_backup_item(shop.shop_type, shop.items, world_random)
                 shop.items.append(backup_item)
-                logging.warning("Filling shop {} that is missing slots with {}".format(shop_id, backup_item))
+                logging.debug("Filling shop {} that is missing slots with {}".format(shop_id, backup_item))
 
         shops[shop_id] = {"items": shop.items, "shop_type": shop.shop_type}
 
