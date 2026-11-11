@@ -7,8 +7,8 @@ from typing import TYPE_CHECKING, Dict, List
 
 from Options import OptionError
 from ..apnds.rom import Rom
-from ..game.ShopContainer import ShopContainer
-from ..game.ShopData import ShopData, ShopConfig
+from ..game.shop.ShopContainer import ShopContainer
+from ..game.shop.ShopData import ShopData, ShopConfig
 from ..options import RandomizeShops, ShopPrices
 
 if TYPE_CHECKING:

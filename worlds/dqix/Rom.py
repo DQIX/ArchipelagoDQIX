@@ -5,8 +5,8 @@ from zipfile import ZipFile
 from Utils import Version
 from settings import get_settings
 from worlds.Files import APAutoPatchInterface
-from .options import RandomizeShops
-from .patch import shop_patch
+from .options import RandomizeShops, RandomizeSkills
+from .patch import shop_patch, skill_patch
 
 if TYPE_CHECKING:
     from ..dqix import DragonQuestIX
@@ -18,7 +18,7 @@ class DQIXPatch(APAutoPatchInterface):
     patch_file_ending = ".apdqix"
     result_file_ending = ".nds"
     DQIX_HASH: str = "3a63438fff7db282fa3133e8fd020e85"
-    PATCH_VERSION = Version(1, 0, 0)
+    PATCH_VERSION = Version(1, 1, 0)
 
     def __init__(self, path: str, player=None, player_name="", world=None):
         self.world: "DragonQuestIX" = world
@@ -56,6 +56,10 @@ class PatchMethods:
             procedures.append("shop_patch")
             shop_patch.write_patch(patch, opened_zipfile)
 
+        if patch.world.options.randomize_skills.value != RandomizeSkills.option_vanilla:
+            procedures.append("skill_patch")
+            skill_patch.write_patch(patch, opened_zipfile)
+
         opened_zipfile.writestr("procedures.txt", "\n".join(procedures))
 
     @staticmethod
@@ -83,7 +87,8 @@ class PatchMethods:
             ],
         ] = {
             "base_patch": base_patch.patch,
-            "shop_patch": shop_patch.patch
+            "shop_patch": shop_patch.patch,
+            "skill_patch": skill_patch.patch
         }
 
         base_data = get_base_rom_bytes()
