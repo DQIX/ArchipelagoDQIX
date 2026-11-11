@@ -86,7 +86,6 @@ class RandomizeSkills(Choice):
     display_name = "Randomize Skill Trees"
 
     option_vanilla = 0
-    option_same_skill_tree = 1
     option_fully_random = 2
 
     default = option_vanilla

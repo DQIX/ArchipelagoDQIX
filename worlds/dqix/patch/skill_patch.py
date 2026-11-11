@@ -8,13 +8,14 @@ from ..game.skill.SkillContainer import SkillContainer
 from ..game.skill.SkillData import SkillData
 from ..game.skill.SkillNameTable import SkillNamingTable
 from ..gpc2 import GPC2
+from ..options import RandomizeSkills
 
 if TYPE_CHECKING:
     from .. import DQIXPatch
 
 
 def write_patch(patch_instance: "DQIXPatch", opened_zipfile: zipfile.ZipFile) -> None:
-    opened_zipfile.writestr("skilltrees.json", json.dumps(randomize_skill_trees(patch_instance.world.random)))
+    opened_zipfile.writestr("skilltrees.json", json.dumps(randomize_skill_trees(patch_instance)))
 
 
 def patch(rom: Rom, patch_instance: "DQIXPatch") -> None:
@@ -44,8 +45,13 @@ def patch(rom: Rom, patch_instance: "DQIXPatch") -> None:
     rom.files["/data/prm/sklname.gp2"] = archive.to_bytes()
 
 
-def randomize_skill_trees(world_random: Random) -> list[dict[str, int]]:
-    shuffled_skills = SkillData.get_all_randomizable_skills()
-    world_random.shuffle(shuffled_skills)
+def randomize_skill_trees(patch_instance: "DQIXPatch") -> list[dict[str, int]]:
+    world_random: Random = patch_instance.world.random
+    randomized_skills = []
 
-    return [skill.to_dict() for skill in shuffled_skills]
+    if patch_instance.world.options.randomize_skills.value == RandomizeSkills.option_fully_random:
+        skills = SkillData.get_all_randomizable_skills()
+        world_random.shuffle(skills)
+        randomized_skills = skills
+
+    return [skill.to_dict() for skill in randomized_skills]

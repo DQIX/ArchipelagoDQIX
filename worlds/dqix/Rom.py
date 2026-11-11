@@ -17,7 +17,7 @@ class DQIXPatch(APAutoPatchInterface):
     patch_file_ending = ".apdqix"
     result_file_ending = ".nds"
     DQIX_HASH: str = "3a63438fff7db282fa3133e8fd020e85"
-    PATCH_VERSION = Version(1, 0, 0)
+    PATCH_VERSION = Version(1, 1, 0)
 
     def __init__(self, path: str, player=None, player_name="", world=None):
         self.world: "DragonQuestIX" = world
