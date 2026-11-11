@@ -48,3 +48,15 @@ class SkillNamingTable:
         out += self.remainder_magic
 
         return out
+
+    def get_text_by_offset(self, text_offset: int):
+        if text_offset == int('0xFFFFFFFF', 16):
+            text = ''
+        else:
+            text_end = self.remainder_magic[text_offset:].find(b'\x00')
+            if text_end == -1:
+                raise "Could not find text end for skill - this should not happen!"
+            else:
+                text = str(self.remainder_magic[text_offset:text_offset + text_end])
+
+        return text

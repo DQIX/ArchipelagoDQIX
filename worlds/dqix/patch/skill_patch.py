@@ -29,6 +29,7 @@ def patch(rom: Rom, patch_instance: "DQIXPatch") -> None:
 
     rom.files["/data/prm/skilltable.bin"] = skill_container.to_bytes()
 
+    # Update skill names, so they properly show in the skill tree menu
     name_data = rom.files["/data/prm/sklname.gp2"]
     archive = GPC2(name_data)
     tables: Dict[str, SkillNamingTable] = {}
@@ -44,7 +45,7 @@ def patch(rom: Rom, patch_instance: "DQIXPatch") -> None:
 
 
 def randomize_skill_trees(world_random: Random) -> list[dict[str, int]]:
-    shuffled_skills = SkillData.get_all_skills()
+    shuffled_skills = SkillData.get_all_randomizable_skills()
     world_random.shuffle(shuffled_skills)
 
     return [skill.to_dict() for skill in shuffled_skills]

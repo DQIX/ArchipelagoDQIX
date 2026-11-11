@@ -1,5 +1,3 @@
-import logging
-
 from .SkillData import SkillData
 from .SkillLabelDefinition import SkillLabelDefinition
 from .SkillNameTable import SkillNamingTable
@@ -38,6 +36,9 @@ class SkillContainer:
     def apply_new_skills(self, new_skill_data: list[dict[str, int]]):
         new_skills = []
         for skill in self.skills:
+            if skill.skill_point_cost == 0:
+                new_skills.append(skill)
+                continue
             new_data = new_skill_data.pop()
             skill.ability_id = new_data["skill_id"]
             skill.action_id = new_data["action_id"]
@@ -49,13 +50,13 @@ class SkillContainer:
 
         self.skills = new_skills
 
-    def update_skill_labels(self, skill_table: SkillNamingTable) -> SkillNamingTable:
+    def update_skill_labels(self, skill_naming_table: SkillNamingTable) -> SkillNamingTable:
         new_list: list[SkillLabelDefinition] = []
         original_naming_data_by_tree_and_cost: dict[int, dict[int, dict[str, int | bool]]] = {}
         new_skills_by_tree_and_cost = self.get_skills_by_tree_and_cost()
 
         # Mapping of the naming data for a given skill / position in the original skill tree
-        for label in skill_table.skill_labels:
+        for label in skill_naming_table.skill_labels:
             if label.tree not in original_naming_data_by_tree_and_cost:
                 original_naming_data_by_tree_and_cost[label.tree] = {}
             original_naming_data_by_tree_and_cost[label.tree][label.cost] = {
@@ -63,39 +64,22 @@ class SkillContainer:
                 "append_icon": label.append_icon
             }
 
-        """
-        Wir suchen den korrekten Eintrag für den Skill in Tree X und Cost Y, nachdem der Randomizer am Werk war
-        Wir haben die vanilla Daten mit der Zuordnung: Tree X und Cost Y => passende Bezeichnung und Icon Ja/Nein
-        
-        Basierend auf unseren randomized skills, die ihre eigenen position und cost haben jetzt, müssen wir die bestehenden Labels updaten,
-        mit korrekten Text-Offset und Icon anzeigen Ja/Nein
-        
-        Für jedes bestehende Label: Was sind die neuen Werte für dieses Label an Tree X und Cost Y?
-        => Den Skill holen, der jetzt neu an Tree X und Cost Y liegt. self.skills nach tree und cost
-          => Für diese Ability-ID: Text-Offset herholen aus Original-Liste
-          => Daten für Ability-ID Z für das aktuelle Label anwenden   
-        """
-
-        for i, label in enumerate(skill_table.skill_labels):
-            if label.tree == 0:
+        for label in skill_naming_table.skill_labels:
+            if label.tree == 0 or label.cost == 0:
+                new_list.append(label)
                 continue
             new_ability_id: int = new_skills_by_tree_and_cost[label.tree][label.cost]
             original_tree, original_cost = SkillData.get_original_tree_and_cost_by_ability_id(new_ability_id)
 
-            logging.warning("Handling Skill Label for Tree = {} and Cost = {}: Ability ID is {}".format(label.tree, label.cost, new_ability_id))
-            logging.warning("Orig Tree = {} and Orig Cost = {}".format(original_tree, original_cost))
-
-            logging.warning("Offset Old: {} | Offset new: {}".format(label.text_offset, original_naming_data_by_tree_and_cost[original_tree][original_cost]["text_offset"]))
             # noinspection bad-assignment
             label.append_icon = original_naming_data_by_tree_and_cost[original_tree][original_cost]["append_icon"]
             label.text_offset = original_naming_data_by_tree_and_cost[original_tree][original_cost]["text_offset"]
 
-            logging.warning("Append Icon: {}".format("yes" if label.append_icon else "no"))
             new_list.append(label)
 
-        skill_table.skill_labels = new_list
+        skill_naming_table.skill_labels = new_list
 
-        return skill_table
+        return skill_naming_table
 
     def get_skills_by_tree_and_cost(self) -> dict[int, dict[int, int]]:
         out = {}

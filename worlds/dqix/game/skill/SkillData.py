@@ -353,10 +353,10 @@ class SkillData:
         return SkillData.SKILLS_BY_SKILL_TREE[skill_tree]
 
     @staticmethod
-    def get_all_skills() -> List[SkillDetails]:
+    def get_all_randomizable_skills() -> List[SkillDetails]:
         all_skills = []
         for skills in SkillData.SKILLS_BY_SKILL_TREE.values():
-            all_skills.extend(skills)
+            all_skills.extend([skill for skill in skills if skill.cost != 0])
         return all_skills
 
     @staticmethod
