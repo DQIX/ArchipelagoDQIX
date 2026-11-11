@@ -5,12 +5,11 @@ from zipfile import ZipFile
 from Utils import Version
 from settings import get_settings
 from worlds.Files import APAutoPatchInterface
-from .options import RandomizeShops, RandomizeSkills
+from .options import RandomizeShops, RandomizeSkills, ShopPrices
 from .patch import shop_patch, skill_patch
 
 if TYPE_CHECKING:
     from ..dqix import DragonQuestIX
-    from ..dqix import ShopPrices
 
 
 class DQIXPatch(APAutoPatchInterface):
