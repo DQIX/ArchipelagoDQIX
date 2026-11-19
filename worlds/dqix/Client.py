@@ -1,15 +1,15 @@
-from typing import TYPE_CHECKING, Optional, List, Dict
+from typing import TYPE_CHECKING, Optional, List
 
 # noinspection protected-member
 import worlds._bizhawk as bizhawk
 from NetUtils import NetworkItem, ClientStatus
 # noinspection protected-member
 from worlds._bizhawk.client import BizHawkClient
-from worlds.dqix.Constants import DQIXConstants
-from worlds.dqix.helper.BaseHelper import BaseHelper
-from worlds.dqix.helper.BestiaryHelper import BestiaryHelper
-from worlds.dqix.helper.InventoryHelper import InventoryHelper
-from .Rom import DQIXPatch
+from .Rom import DQIXPatch  # type: ignore[unused-imports]
+from ..dqix.Constants import DQIXConstants
+from ..dqix.helper.BaseHelper import BaseHelper
+from ..dqix.helper.BestiaryHelper import BestiaryHelper
+from ..dqix.helper.InventoryHelper import InventoryHelper
 
 if TYPE_CHECKING:
     # noinspection protected-member
@@ -62,8 +62,6 @@ class DQIXClient(BizHawkClient):
                 assert self.base_helper is not None
 
             if await self.is_ready_and_in_game():
-                await bizhawk.set_message_interval(ctx=ctx.bizhawk_ctx, value=5)
-
                 saved_expected_index = await self.base_helper.read_int_from_ram(DQIXConstants.NEXT_EXPECTED_INDEX, 4)
                 # If no previous value is known, use the value loaded from the save
                 if self.next_expected_item_index is None:
@@ -84,7 +82,7 @@ class DQIXClient(BizHawkClient):
 
                 await self.location_check(ctx)
                 await self.bestiary_check(ctx)
-                await self.received_items_check(ctx)
+                await self.process_received_items(ctx)
 
                 # BaseHelper.debug("Completed one round of location, bestiary and received item checks")
 
@@ -121,19 +119,13 @@ class DQIXClient(BizHawkClient):
             await ctx.check_locations([current_location])
         # BaseHelper.debug("End: Checking Locations")
 
-    async def received_items_check(self, ctx: "BizHawkClientContext"):
+    async def process_received_items(self, ctx: "BizHawkClientContext"):
         assert self.base_helper is not None
         # BaseHelper.debug("Begin: Checking Received Items")
         network_item: NetworkItem
         inventory_helper = InventoryHelper(ctx=ctx, dqix_client=self)
         for index, network_item in enumerate(ctx.items_received):
             if index == self.next_expected_item_index:
-                if ctx.slot == network_item.player:
-                    display_message = "Found your own \"{0}\"".format(ctx.item_names.lookup_in_game(network_item.item))
-                else:
-                    display_message = "{0} found your \"{1}\"".format(ctx.player_names[network_item.player], ctx.item_names.lookup_in_game(network_item.item))
-                BaseHelper.debug("Received item message: " + display_message)
-                await bizhawk.display_message(ctx.bizhawk_ctx, display_message)
                 await inventory_helper.grant_received_item(item_id=network_item.item)
                 self.next_expected_item_index = index + 1
                 BaseHelper.debug("Updating last known index, it is now " + str(index))

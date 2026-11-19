@@ -1,10 +1,11 @@
 from enum import Enum
 from typing import TYPE_CHECKING
 
-from worlds.dqix.Constants import DQIXConstants
-from worlds.dqix.Items import ItemType, DQIXItems
-from worlds.dqix.helper.BaseHelper import BaseHelper
-from worlds.dqix.helper.BestiaryHelper import BestiaryHelper
+from ..Constants import DQIXConstants
+from ..Items import ItemType, DQIXItems
+from ..Items import VOCATIONS_BY_ITEM_ID
+from ..helper.BaseHelper import BaseHelper
+from ..helper.BestiaryHelper import BestiaryHelper
 
 if TYPE_CHECKING:
     from worlds._bizhawk.context import BizHawkClientContext
@@ -38,6 +39,8 @@ class InventoryHelper(BaseHelper):
             return ItemType.EXPERIENCE
         elif 50000 <= item_id <= 50022:
             return ItemType.BOSS_KEY
+        elif 60000 <= item_id <= 60006:
+            return ItemType.VOCATION
         return None
 
     @staticmethod
@@ -78,6 +81,8 @@ class InventoryHelper(BaseHelper):
                 await self.grant_equipment(item_id=item_id)
             case ItemType.BOSS_KEY:
                 await self.grant_boss_item(item_id=item_id)
+            case ItemType.VOCATION:
+                await self.grant_vocation(item_id=item_id)
             case None:
                 self.warning("Uh-oh, could not determine the item type for item with ID = {0}. This should not happen, please report this error to the author.".format(item_id))
 
@@ -184,3 +189,51 @@ class InventoryHelper(BaseHelper):
             target_address = experience_offset + vocation * 4
             current_exp = await self.read_int_from_ram(target_address, 4)
             await self.write_int_to_ram(target_address, 4, current_exp + earned_experience)
+
+    async def grant_vocation(self, item_id: int):
+        data = await self.read_int_from_ram(DQIXConstants.UNLOCKABLE_VOCATIONS_OFFSET, 2)
+        data_as_str: str = '{:016b}'.format(data)
+
+        target_vocation: str = VOCATIONS_BY_ITEM_ID[item_id]
+
+        self.info("Unlocking vocation: " + target_vocation)
+
+        self.debug("Starting vocation data: " + data_as_str)
+
+        ranger: bool = True if int(data_as_str[4:5], 2) == 1 else False
+        luminary: bool = True if int(data_as_str[5:6], 2) == 1 else False
+        sage: bool = True if int(data_as_str[6:7], 2) == 1 else False
+        paladin: bool = True if int(data_as_str[7:8], 2) == 1 else False
+        armamentalist: bool = True if int(data_as_str[8:9], 2) == 1 else False
+        gladiator: bool = True if int(data_as_str[9:10], 2) == 1 else False
+
+        self.debug("Vocation Unlocks - Ranger: " + ("Yes" if ranger else "No"))
+        self.debug("Vocation Unlocks - Luminary: " + ("Yes" if luminary else "No"))
+        self.debug("Vocation Unlocks - Sage: " + ("Yes" if sage else "No"))
+        self.debug("Vocation Unlocks - Paladin: " + ("Yes" if paladin else "No"))
+        self.debug("Vocation Unlocks - Armamentalist: " + ("Yes" if armamentalist else "No"))
+        self.debug("Vocation Unlocks - Gladiator: " + ("Yes" if gladiator else "No"))
+
+        if target_vocation == "Ranger":
+            ranger = True
+        elif target_vocation == "Luminary":
+            luminary = True
+        elif target_vocation == "Sage":
+            sage = True
+        elif target_vocation == "Paladin":
+            paladin = True
+        elif target_vocation == "Armamentalist":
+            armamentalist = True
+        elif target_vocation == "Gladiator":
+            gladiator = True
+
+        out = "0000"
+
+        for voc in [ranger, luminary, sage, paladin, armamentalist, gladiator]:
+            out += "1" if voc else "0"
+
+        out += "000000"
+
+        self.debug("New vocation string: " + out)
+
+        await self.write_int_to_ram(DQIXConstants.UNLOCKABLE_VOCATIONS_OFFSET, 2, int(out, 2))

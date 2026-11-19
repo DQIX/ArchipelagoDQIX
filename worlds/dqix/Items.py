@@ -22,6 +22,17 @@ class ItemType(Enum):
     GOLD = "gold"
     IMPORTANT_ITEM = "important"
     BOSS_KEY = "boss"
+    VOCATION = "vocation"
+
+
+VOCATIONS_BY_ITEM_ID: dict[int, str] = {
+    60000: "Ranger",
+    60001: "Luminary",
+    60002: "Sage",
+    60003: "Paladin",
+    60004: "Armamentalist",
+    60005: "Gladiator",
+}
 
 
 class ItemData(NamedTuple):
@@ -1196,7 +1207,13 @@ all_items_dict: Dict[str, ItemData] = {
     "Experience (A small amount)": ItemData("Experience (A small amount)", 100010, ItemType.EXPERIENCE, ItemClassification.filler),
     "Experience (A medium amount)": ItemData("Experience (A medium amount)", 100011, ItemType.EXPERIENCE, ItemClassification.filler),
     "Experience (A large amount)": ItemData("Experience (A large amount)", 100012, ItemType.EXPERIENCE, ItemClassification.filler),
-    "Experience (A huge amount)": ItemData("Experience (A huge amount)", 100013, ItemType.EXPERIENCE, ItemClassification.filler)
+    "Experience (A huge amount)": ItemData("Experience (A huge amount)", 100013, ItemType.EXPERIENCE, ItemClassification.filler),
+    "Vocation Unlock: Ranger": ItemData("Vocation Unlock: Ranger", 60000, ItemType.VOCATION, ItemClassification.progression),
+    "Vocation Unlock: Luminary": ItemData("Vocation Unlock: Luminary", 60001, ItemType.VOCATION, ItemClassification.progression),
+    "Vocation Unlock: Sage": ItemData("Vocation Unlock: Sage", 60002, ItemType.VOCATION, ItemClassification.progression),
+    "Vocation Unlock: Paladin": ItemData("Vocation Unlock: Paladin", 60003, ItemType.VOCATION, ItemClassification.progression),
+    "Vocation Unlock: Armamentalist": ItemData("Vocation Unlock: Armamentalist", 60004, ItemType.VOCATION, ItemClassification.progression),
+    "Vocation Unlock: Gladiator": ItemData("Vocation Unlock: Gladiator", 60005, ItemType.VOCATION, ItemClassification.progression),
 }
 
 all_items = {k: v.code for k, v in all_items_dict.items()}
