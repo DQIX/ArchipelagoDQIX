@@ -2,14 +2,14 @@ import logging
 from typing import TYPE_CHECKING, Dict, Any, Callable
 from zipfile import ZipFile
 
-from .options import RandomizeShops
 from Utils import Version
-from .patch import shop_patch
-from worlds.Files import APAutoPatchInterface
 from settings import get_settings
+from worlds.Files import APAutoPatchInterface
+from .options import RandomizeShops, RandomizeSkills, ShopPrices
+from .patch import shop_patch, skill_patch
 
 if TYPE_CHECKING:
-    from worlds.dqix import DragonQuestIX
+    from ..dqix import DragonQuestIX
 
 
 class DQIXPatch(APAutoPatchInterface):
@@ -17,7 +17,7 @@ class DQIXPatch(APAutoPatchInterface):
     patch_file_ending = ".apdqix"
     result_file_ending = ".nds"
     DQIX_HASH: str = "3a63438fff7db282fa3133e8fd020e85"
-    PATCH_VERSION = Version(1, 0, 0)
+    PATCH_VERSION = Version(1, 1, 0)
 
     def __init__(self, path: str, player=None, player_name="", world=None):
         self.world: "DragonQuestIX" = world
@@ -51,9 +51,13 @@ class PatchMethods:
     def write_contents(patch: DQIXPatch, opened_zipfile: ZipFile) -> None:
         procedures: list[str] = ["base_patch"]
 
-        if patch.world.options.randomize_shops.value != RandomizeShops.option_none:
+        if patch.world.options.randomize_shops.value != RandomizeShops.option_none or patch.world.options.randomize_shop_price.value != ShopPrices.default:
             procedures.append("shop_patch")
             shop_patch.write_patch(patch, opened_zipfile)
+
+        if patch.world.options.randomize_skills.value != RandomizeSkills.option_vanilla:
+            procedures.append("skill_patch")
+            skill_patch.write_patch(patch, opened_zipfile)
 
         opened_zipfile.writestr("procedures.txt", "\n".join(procedures))
 
@@ -82,7 +86,8 @@ class PatchMethods:
             ],
         ] = {
             "base_patch": base_patch.patch,
-            "shop_patch": shop_patch.patch
+            "shop_patch": shop_patch.patch,
+            "skill_patch": skill_patch.patch
         }
 
         base_data = get_base_rom_bytes()

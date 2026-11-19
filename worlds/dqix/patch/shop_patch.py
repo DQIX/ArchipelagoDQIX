@@ -6,10 +6,10 @@ from random import Random
 from typing import TYPE_CHECKING, Dict, List
 
 from Options import OptionError
-from ..options import RandomizeShops, ShopPrices
 from ..apnds.rom import Rom
-from ..game.ShopContainer import ShopContainer
-from ..game.ShopData import ShopData, ShopConfig
+from ..game.shop.ShopContainer import ShopContainer
+from ..game.shop.ShopData import ShopData, ShopConfig
+from ..options import RandomizeShops, ShopPrices
 
 if TYPE_CHECKING:
     from .. import DQIXPatch
@@ -19,17 +19,18 @@ def write_patch(patch_instance: "DQIXPatch", opened_zipfile: zipfile.ZipFile) ->
     options = patch_instance.world.options
     world_random = patch_instance.world.random
 
-    opened_zipfile.writestr("shop_data.json", json.dumps(randomize_shops(world_random, options.randomize_shops.value)))
+    if options.randomize_shops.value != options.randomize_shops.option_none:
+        opened_zipfile.writestr("shop_data.json", json.dumps(randomize_shops(world_random, options.randomize_shops.value)))
     if options.randomize_shop_price != ShopPrices.option_vanilla:
         opened_zipfile.writestr("shop_price_modifiers.json", json.dumps(randomize_shop_price_modifiers(world_random, options.randomize_shop_price.value, options.shop_price_min.value, options.shop_price_max.value)))
 
 
 def patch(rom: Rom, patch_instance: "DQIXPatch") -> None:
     shop_data = bytearray(rom.files["/data/bin/menu/shopdata1.bin"])
-
     shop_container = ShopContainer.create_from_bytes(shop_data)
 
-    shop_container.apply_new_shop_data(patch_instance.get_file("shop_data.json"))
+    if patch_instance.has_file("shop_data.json"):
+        shop_container.apply_new_shop_data(patch_instance.get_file("shop_data.json"))
 
     if patch_instance.has_file("shop_price_modifiers.json"):
         shop_container.apply_shop_price_modifiers(patch_instance.get_file("shop_price_modifiers.json"))
@@ -59,7 +60,8 @@ def get_backup_item(shop_type: int, current_items: List[int], world_random: Rand
     replacements = [item for item in replacements if item not in current_items]
 
     if len(replacements) == 0:
-        raise Exception("Could not fill shop with replacements - this should not usually happen.", shop_type, current_items)
+        logging.warning("Could not fill shop with replacements - this should not usually happen.", shop_type, current_items)
+        return 0
 
     return world_random.choice(replacements)
 
@@ -122,7 +124,7 @@ def fill_shops_with_items(all_items: Dict[int, int], all_shops: Dict[int, ShopCo
             for _ in range(missing_item_count):
                 backup_item = get_backup_item(shop.shop_type, shop.items, world_random)
                 shop.items.append(backup_item)
-                logging.warning("Filling shop {} that is missing slots with {}".format(shop_id, backup_item))
+                logging.debug("Filling shop {} that is missing slots with {}".format(shop_id, backup_item))
 
         shops[shop_id] = {"items": shop.items, "shop_type": shop.shop_type}
 

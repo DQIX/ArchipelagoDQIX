@@ -1,3 +1,6 @@
+import struct
+
+
 class Shop:
     def __init__(self, byte_data: bytes):
         """
@@ -8,13 +11,10 @@ class Shop:
         +0x54 4 bytes: Shop Type, eg 3 for a "general" shop
         :param byte_data:
         """
-        self.identifier = int.from_bytes(byte_data[0x0:0x4], "little")
-        self.magic_number = int.from_bytes(byte_data[0x4:0x8], "little")
-
+        self.identifier, self.magic_number = struct.unpack("<II", byte_data[0x0:0x8])
         item_bytes = byte_data[0x8: 0x50]
-        self.items = [int.from_bytes(item_bytes[i:i + 4], "little") for i in range(0, len(item_bytes), 4)]
-        self.price_multiplier = int.from_bytes(byte_data[0x50: 0x54], "little")
-        self.shop_type = int.from_bytes(byte_data[0x54:0x58], "little")
+        self.items = list(struct.unpack("<18I", item_bytes))
+        self.price_multiplier, self.shop_type = struct.unpack("<II", byte_data[0x50:0x58])
 
     def to_bytes(self):
         """
@@ -22,14 +22,13 @@ class Shop:
         :return:
         """
         out = bytearray()
-        out += bytearray(int.to_bytes(self.identifier, 4, "little"))
-        out += bytearray(int.to_bytes(self.magic_number, 4, "little"))
+
+        out += struct.pack("<II", self.identifier, self.magic_number)
         for i in range(18):
             # If the shop was not filled with enough items, mark the remaining ones as empty / 0
             item = self.items[i] if 0 <= i < len(self.items) else 0
-            out += bytearray(int.to_bytes(item, 4, "little"))
+            out += struct.pack("<I", item)
 
-        out += bytearray(int.to_bytes(self.price_multiplier, 4, "little"))
-        out += bytearray(int.to_bytes(self.shop_type, 4, "little"))
+        out += struct.pack("<II", self.price_multiplier, self.shop_type)
 
         return out

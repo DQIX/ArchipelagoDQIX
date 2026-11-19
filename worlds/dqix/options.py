@@ -81,6 +81,16 @@ class ShopPriceRangeMax(Range):
     default = 200
 
 
+class RandomizeSkills(Choice):
+    """If and how the skill trees should be randomized"""
+    display_name = "Randomize Skill Trees"
+
+    option_vanilla = 0
+    option_fully_random = 2
+
+    default = option_vanilla
+
+
 @dataclass
 class DQIXOptions(PerGameCommonOptions):
     end_boss: EndBoss
@@ -89,3 +99,4 @@ class DQIXOptions(PerGameCommonOptions):
     randomize_shop_price: ShopPrices
     shop_price_min: ShopPriceRangeMin
     shop_price_max: ShopPriceRangeMax
+    randomize_skills: RandomizeSkills
