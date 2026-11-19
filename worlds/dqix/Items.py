@@ -25,6 +25,15 @@ class ItemType(Enum):
     VOCATION = "vocation"
 
 
+VOCATION_ITEMS = [
+    "Vocation Unlock: Ranger",
+    "Vocation Unlock: Luminary",
+    "Vocation Unlock: Sage",
+    "Vocation Unlock: Paladin",
+    "Vocation Unlock: Armamentalist",
+    "Vocation Unlock: Gladiator"
+]
+
 VOCATIONS_BY_ITEM_ID: dict[int, str] = {
     60000: "Ranger",
     60001: "Luminary",
@@ -60,7 +69,7 @@ class DQIXItems:
         allowed_boss_keys = self.get_allowed_boss_keys(options)
 
         for item_data in self.progression_items.values():
-            if item_data.item_type == ItemType.IMPORTANT_ITEM:
+            if item_data.item_type == ItemType.IMPORTANT_ITEM or item_data.item_type == ItemType.VOCATION:
                 prog_items.append(item_data.name)
             elif item_data.item_type == ItemType.BOSS_KEY and item_data.name in allowed_boss_keys:
                 prog_items.append(item_data.name)

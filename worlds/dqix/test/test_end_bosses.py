@@ -1,5 +1,6 @@
 from typing import List
 
+from worlds.dqix.Items import VOCATION_ITEMS
 from .bases import DQIXTestBase
 from .. import EndBoss
 
@@ -22,6 +23,7 @@ class EndBossHelper(DQIXTestBase):
                 self.assertTrue(self.can_reach_region(region_name), f"\"{region_name}\" cannot be accessed even though all required boss keys are present: {boss_key_list}")
 
     def test_boss_key_logic(self):
+        self.collect_by_name(VOCATION_ITEMS)
         for boss_data in self.BOSS_REQUIREMENTS:
             self.check_boss_keys_for_regions(boss_data["bosses"], boss_data["regions"])
 

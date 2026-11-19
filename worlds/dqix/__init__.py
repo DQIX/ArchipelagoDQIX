@@ -6,11 +6,12 @@ from typing import Mapping, Any
 import settings
 from BaseClasses import Tutorial, Region
 from Options import OptionError
-from rule_builder.rules import Has, HasAll, Rule, HasAny
+from rule_builder.options import OptionFilter
+from rule_builder.rules import Has, HasAll, Rule, HasAny, HasFromListUnique
 from worlds.AutoWorld import World, WebWorld
 # noinspection unused-imports
 from .Client import DQIXClient
-from .Items import DQIXItems, DQIXItem, all_items, all_items_dict
+from .Items import DQIXItems, DQIXItem, all_items, all_items_dict, VOCATION_ITEMS
 from .Locations import DQIXLocation, all_locations_dict, all_locations_by_region
 from .Rom import DQIXPatch
 from .options import EndBoss, DQIXOptions, ShopPrices
@@ -106,7 +107,7 @@ class DragonQuestIX(World):
 
         region_stornway = self.create_region_with_locations(region_name="Stornway")
         region_stornway.add_event(location_name="Boss: Wight Knight", item_name="Defeated Wight Knight", rule=Has("Boss Key: Wight Knight"))
-        self.create_entrance(region_angel_falls, region_stornway, Has("Defeated Hexagoon"))
+        self.create_entrance(region_angel_falls, region_stornway, Has("Defeated Hexagoon") & HasFromListUnique(*VOCATION_ITEMS, count=1))
 
         region_zere = self.create_region_with_locations(region_name="Zere")
         self.create_entrance(region_stornway, region_zere)
@@ -116,13 +117,13 @@ class DragonQuestIX(World):
         self.create_entrance(region_zere, region_brigadoom)
 
         region_coffinwell = self.create_region_with_locations(region_name="Coffinwell")
-        self.create_entrance(region_brigadoom, region_coffinwell, HasAll("Defeated Morag", "Defeated Wight Knight"))
+        self.create_entrance(region_brigadoom, region_coffinwell, HasAll("Defeated Morag", "Defeated Wight Knight") & HasFromListUnique(*VOCATION_ITEMS, count=2, options=[OptionFilter(EndBoss, EndBoss.option_master_of_nuun)], filtered_resolution=True))
         region_quarantomb = self.create_region_with_locations(region_name="Quarantomb")
         region_quarantomb.add_event(location_name="Boss: Ragin' Contagion", item_name="Defeated Ragin' Contagion", rule=Has("Boss Key: Ragin' Contagion"))
         self.create_entrance(region_coffinwell, region_quarantomb)
 
         region_observatory = self.create_region_with_locations(region_name="Observatory")
-        self.create_entrance(region_coffinwell, region_observatory, Has("Defeated Ragin' Contagion"))
+        self.create_entrance(region_coffinwell, region_observatory, Has("Defeated Ragin' Contagion") & HasFromListUnique(*VOCATION_ITEMS, count=3, options=[OptionFilter(EndBoss, EndBoss.option_master_of_nuun)], filtered_resolution=True) & HasFromListUnique(*VOCATION_ITEMS, count=2, options=[OptionFilter(EndBoss, EndBoss.option_greygnarl), OptionFilter(EndBoss, EndBoss.option_corvus)], filtered_resolution=True))
 
         region_alltrades_abbey = self.create_region_with_locations(region_name="Alltrades Abbey")
         self.create_entrance(region_observatory, region_alltrades_abbey)
@@ -191,13 +192,13 @@ class DragonQuestIX(World):
             self.create_entrance(region_swinedimpels, region_old_school)
 
             region_wormwood_creek = self.create_region_with_locations(region_name="Wormwood Creek")
-            self.create_entrance(region_ocean, region_wormwood_creek)
+            self.create_entrance(region_ocean, region_wormwood_creek, HasFromListUnique(*VOCATION_ITEMS, count=5, options=[OptionFilter(EndBoss, EndBoss.option_greygnarl)], filtered_resolution=True) & HasFromListUnique(*VOCATION_ITEMS, count=4, options=[OptionFilter(EndBoss, EndBoss.option_corvus)], filtered_resolution=True))
             region_bowhole = self.create_region_with_locations(region_name="Bowhole")
             region_bowhole.add_event(location_name="Boss: Gadrongo", item_name="Defeated Gadrongo", rule=Has("Boss Key: Gadrongo"))
             self.create_entrance(region_wormwood_creek, region_bowhole, HasAll("Defeated Master of Nu'un", "Defeated Lleviathan", "Defeated Garth Goyle", "Defeated Tyrantula", "Defeated Grand Lizzier", "Defeated Larstastnaras", "Defeated Dreadmaster"))
 
             region_upover = self.create_region_with_locations(region_name="Upover")
-            self.create_entrance(region_wormwood_creek, region_upover, Has("Defeated Gadrongo"))
+            self.create_entrance(region_wormwood_creek, region_upover, Has("Defeated Gadrongo") & HasFromListUnique(*VOCATION_ITEMS, count=6, options=[OptionFilter(EndBoss, EndBoss.option_greygnarl)], filtered_resolution=True) & HasFromListUnique(*VOCATION_ITEMS, count=5, options=[OptionFilter(EndBoss, EndBoss.option_corvus)], filtered_resolution=True))
             region_magmaroo = self.create_region_with_locations(region_name="Magmaroo")
             region_magmaroo.add_event(location_name="Boss: Greygnarl", item_name="Defeated Greygnarl", rule=Has("Boss Key: Greygnarl"))
             self.create_entrance(region_upover, region_magmaroo)
@@ -235,7 +236,7 @@ class DragonQuestIX(World):
                 self.create_entrance(region_goretress, region_gittingham_palace, Has("Defeated Goreham-Hogg (I)"))
 
                 region_oubliette = self.create_region_with_locations(region_name="Oubliette")
-                self.create_entrance(region_gittingham_palace, region_oubliette, Has("Defeated King Godwyn"))
+                self.create_entrance(region_gittingham_palace, region_oubliette, Has("Defeated King Godwyn") & HasFromListUnique(*VOCATION_ITEMS, count=6, options=[OptionFilter(EndBoss, EndBoss.option_corvus)], filtered_resolution=True))
 
                 region_realm_of_the_mighty_part_1 = self.create_region_with_locations(region_name="Realm of the Mighty - Initial")
                 region_realm_of_the_mighty_part_1.add_event(location_name="Boss: Goreham-Hogg (II)", item_name="Defeated Goreham-Hogg (II)", rule=Has("Boss Key: Goreham-Hogg (II)"))
