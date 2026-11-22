@@ -235,7 +235,7 @@ class DragonQuestIX(World):
                 self.create_entrance(region_goretress, region_gittingham_palace, Has("Defeated Goreham-Hogg (I)"))
 
                 region_oubliette = self.create_region_with_locations(region_name="Oubliette")
-                self.create_entrance(region_gittingham_palace, region_oubliette, Has("Defeated King Godwyn"))
+                self.create_entrance(region_gittingham_palace, region_oubliette, HasAll("Defeated King Godwyn","Defeated Goreham-Hogg (I)","Defeated Goresby-Purrvis (I)","Defeated Hootingham-Gore (I)"))
 
                 region_realm_of_the_mighty_part_1 = self.create_region_with_locations(region_name="Realm of the Mighty - Initial")
                 region_realm_of_the_mighty_part_1.add_event(location_name="Boss: Goreham-Hogg (II)", item_name="Defeated Goreham-Hogg (II)", rule=Has("Boss Key: Goreham-Hogg (II)"))
