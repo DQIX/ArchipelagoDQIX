@@ -111,7 +111,7 @@ class DragonQuestIX(World):
         region_zere = self.create_region_with_locations(region_name="Zere")
         self.create_entrance(region_stornway, region_zere)
         region_brigadoom = self.create_region_with_locations(region_name="Brigadoom")
-        region_brigadoom.add_event(location_name="Boss: Morag", item_name="Defeated Morag", rule=Has("Boss Key: Morag"))
+        region_brigadoom.add_event(location_name="Boss: Morag", item_name="Defeated Morag", rule=HasAll("Boss Key: Morag", "Boss Key: Wight Knight"))
         self.create_entrance(region_stornway, region_brigadoom)
         self.create_entrance(region_zere, region_brigadoom)
 
@@ -288,6 +288,7 @@ class DragonQuestIX(World):
 
     def apply_special_rules(self) -> None:
         self.set_rule(spot=self.get_location("Stornway Castle - Treasury"), rule=Has("Defeated Morag"))
+        self.set_rule(spot=self.get_location("Quarantomb - B1"), rule=Has("Defeated Ragin' Contagion"))
 
         if self.options.end_boss.value in [EndBoss.option_greygnarl, EndBoss.option_corvus]:
             self.set_rule(spot=self.get_location("Dourbridge - secret shop"), rule=Has("Ultimate Key"))
